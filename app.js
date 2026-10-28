@@ -11,11 +11,13 @@
     { nome: 'Collor', ini: '1990-03-15', fim: '1992-10-01', cor: '--g-collor' },
     { nome: 'Itamar', ini: '1992-10-02', fim: '1994-12-31', cor: '--g-itamar' },
     { nome: 'FHC', ini: '1995-01-01', fim: '2002-12-31', cor: '--g-fhc' },
-    { nome: 'Lula', ini: '2003-01-01', fim: '2010-12-31', cor: '--g-lula' },
+    { nome: 'Lula 1', ini: '2003-01-01', fim: '2006-12-31', cor: '--g-lula' },
+    { nome: 'Lula 2', ini: '2007-01-01', fim: '2010-12-31', cor: '--g-lula', forte: true },
     { nome: 'Dilma', ini: '2011-01-01', fim: '2016-05-11', cor: '--g-dilma' },
     { nome: 'Temer', ini: '2016-05-12', fim: '2018-12-31', cor: '--g-temer' },
     { nome: 'Bolsonaro', ini: '2019-01-01', fim: '2022-12-31', cor: '--g-bolsonaro' },
-    { nome: 'Lula', ini: '2023-01-01', fim: null, cor: '--g-lula' },
+    // Lula 3 termina em 31/12/2026; o próximo mandato entra aqui quando começar (jan/2027)
+    { nome: 'Lula 3', ini: '2023-01-01', fim: '2026-12-31', cor: '--g-lula' },
   ].map(g => ({ ...g, t0: Date.parse(g.ini), t1: g.fim ? Date.parse(g.fim) : Infinity }));
   const govEm = ts => GOVERNOS.find(g => ts >= g.t0 && ts <= g.t1);
 
@@ -390,7 +392,8 @@
         const x0 = Math.max(gv.t0, st.ini), x1 = Math.min(gv.t1, st.fim);
         if (x1 <= x0) return [];
         const w = (x1 - x0) * larg;
-        return [[{ name: gv.nome, xAxis: x0, itemStyle: { color: hexA(c.cor(gv.cor), af) },
+        // mandatos seguidos do mesmo presidente: o 2º um pouco mais forte, para as faixas não se fundirem
+        return [[{ name: gv.nome, xAxis: x0, itemStyle: { color: hexA(c.cor(gv.cor), af * (gv.forte ? 1.7 : 1)) },
           label: { show: gi === 0 && w > gv.nome.length * 7 + 12, position: 'top', distance: 5, color: c.fg2, fontSize: 11, fontWeight: 600 } },
           { xAxis: x1 }]];
       }) },
@@ -661,9 +664,10 @@
     pressiona('#seg-eixo', st.eixos);
     $('y-serie').disabled = !st.grupos.some(g => g.length > 1);
     const a2 = brutos(st.ref);
+    const sel = govSelecionados(a2);
     document.querySelectorAll('#govs .gchip').forEach(b => {
-      const t = trechoGov(GOVERNOS[+b.dataset.i], a2);
-      b.setAttribute('aria-pressed', !!t && st.pinos.length === 2 && st.pinos[0] === t[0] && st.pinos[1] === t[1]);
+      const i = +b.dataset.i;
+      b.setAttribute('aria-pressed', !!sel && i >= sel[0] && i <= sel[1]);
     });
     autoSalvar();
   }
@@ -910,16 +914,42 @@
       b.title = 'Medir as séries neste governo';
       const sw = document.createElement('span'); sw.className = 'sw';
       const an = document.createElement('span'); an.className = 'a';
-      an.textContent = g.ini.slice(2, 4) + '–' + (g.fim ? g.fim.slice(2, 4) : 'hoje');
+      an.textContent = g.ini.slice(2, 4) + '–' + (g.fim && g.t1 < Date.now() ? g.fim.slice(2, 4) : 'hoje');
       b.append(sw, document.createTextNode(g.nome), an);
+      b.title = 'Medir as séries neste governo · clique num vizinho para juntar mandatos seguidos';
       b.onclick = () => {
-        const t = trechoGov(g, brutos(st.ref));
-        if (!t) return;
-        st.pinos = b.getAttribute('aria-pressed') === 'true' ? [] : t;
+        // governos consecutivos: clicar no vizinho de uma seleção estende; clicar na ponta encolhe
+        const a = brutos(st.ref), sel = govSelecionados(a);
+        let novo = [i, i];
+        if (sel) {
+          const [s0, s1] = sel;
+          if (i === s0 - 1) novo = [i, s1];
+          else if (i === s1 + 1) novo = [s0, i];
+          else if (i === s0 && s0 === s1) novo = null;
+          else if (i === s0) novo = [s0 + 1, s1];
+          else if (i === s1) novo = [s0, s1 - 1];
+        }
+        const t = novo && trechoGovs(novo[0], novo[1], a);
+        st.pinos = t || [];
         atualizarSeries(); rodape(); atualizarUI();
       };
       box.append(b);
     });
+  }
+  // trecho de dados de um ou mais mandatos seguidos (do início do 1º ao fim do último)
+  function trechoGovs(i0, i1, a) {
+    const t0 = trechoGov(GOVERNOS[i0], a), t1 = trechoGov(GOVERNOS[i1], a);
+    return t0 && t1 ? [t0[0], t1[1]] : null;
+  }
+  // quais mandatos (faixa contínua [i0, i1]) os pontos A/B cobrem exatamente; null se não for um mandato
+  function govSelecionados(a) {
+    if (st.pinos.length !== 2) return null;
+    for (let i0 = 0; i0 < GOVERNOS.length; i0++)
+      for (let i1 = i0; i1 < GOVERNOS.length; i1++) {
+        const t = trechoGovs(i0, i1, a);
+        if (t && t[0] === st.pinos[0] && t[1] === st.pinos[1]) return [i0, i1];
+      }
+    return null;
   }
 
   // ---------- visões salvas (localStorage deste navegador) ----------
