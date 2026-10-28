@@ -97,7 +97,7 @@ details.sec > summary {
   padding: 12px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted);
 }
 details.sec > summary::-webkit-details-marker { display: none; }
-details.sec > summary::after { content: "▾"; font-size: 11px; transition: transform .15s; }
+details.sec > summary::after { content: "▾"; font-size: 17px; line-height: 1; color: var(--fg2); transition: transform .15s; }
 details.sec:not([open]) > summary::after { transform: rotate(-90deg); }
 .sec-corpo { padding: 0 14px 14px; display: grid; gap: 10px; }
 .datas { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
@@ -164,9 +164,17 @@ details.sub > summary {
   padding: 6px 4px 4px; font-size: 12px; color: var(--fg2); font-weight: 500;
 }
 details.sub > summary::-webkit-details-marker { display: none; }
-details.sub > summary::before { content: "▾"; font-size: 10px; color: var(--muted); width: 10px; transition: transform .15s; }
+details.sub > summary::before { content: "▾"; font-size: 16px; line-height: 1; color: var(--fg2); width: 14px; text-align: center; transition: transform .15s; }
 details.sub:not([open]) > summary::before { transform: rotate(-90deg); }
 details.sub > summary:hover { color: var(--fg); }
+.busca { padding: 12px 14px; border-bottom: 1px solid var(--line); display: grid; gap: 8px; }
+.busca input {
+  width: 100%; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--fg); font: 13px var(--sans);
+}
+.resultados { display: grid; gap: 2px; max-height: 60vh; overflow-y: auto; }
+.achado .caminho { padding: 0 8px 4px 33px; margin-top: -3px; font-size: 11px; color: var(--muted); }
+.vazio { font-size: 12px; color: var(--muted); padding: 4px 2px; }
 .fonte-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .fonte-cab b { font-size: 13px; }
 .fonte-cab span { font-size: 11px; color: var(--muted); }
@@ -370,6 +378,6 @@ details.sub > summary:hover { color: var(--fg); }
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=16ee735382"></script>
+<script src="app.js?v=40db5cd7ba"></script>
 </body>
 </html>

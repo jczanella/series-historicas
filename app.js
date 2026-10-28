@@ -606,8 +606,47 @@
   }
 
   // ---------- séries por fonte (menu lateral) ----------
+  function criarItem(id) {
+    const it = document.createElement('button');
+    it.className = 'item'; it.dataset.id = id; it.setAttribute('role', 'checkbox');
+    it.style.setProperty('--c', `var(${CAT[id].cor})`);
+    it.innerHTML = `<span class="cx"></span><span>${esc(CAT[id].nome)}</span><span class="u">${esc(CAT[id].unid)}</span>`;
+    it.title = CAT[id].nome + ' · ' + CAT[id].unid + ' · ' + CAT[id].freq;
+    it.onclick = () => alternar(id);
+    return it;
+  }
+  // busca: filtra enquanto digita (sem diferenciar acentos/maiúsculas) e mostra fonte › tema de cada resultado
+  const semAcento = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  function montarBusca(box) {
+    const wrap = document.createElement('div'); wrap.className = 'busca';
+    const inp = document.createElement('input');
+    inp.type = 'search'; inp.id = 'busca'; inp.autocomplete = 'off';
+    inp.placeholder = 'Buscar série (ex.: selic, pib, dólar)'; inp.setAttribute('aria-label', 'Buscar série');
+    const res = document.createElement('div'); res.className = 'resultados'; res.hidden = true;
+    wrap.append(inp, res); box.append(wrap);
+    const indice = FONTES.flatMap(f => f.temas.flatMap(t => t.series.map(id => ({ id, f, t,
+      chave: semAcento([CAT[id].nome, CAT[id].unid, CAT[id].freq, t.nome || '', f.nome, CAT[id].origem || ''].join(' ')) }))));
+    inp.oninput = () => {
+      const termos = semAcento(inp.value.trim()).split(/\s+/).filter(Boolean);
+      document.querySelectorAll('#fontes > details').forEach(d => { d.hidden = termos.length > 0; });
+      res.hidden = !termos.length; res.textContent = '';
+      if (!termos.length) return;
+      const achados = indice.filter(x => termos.every(t => x.chave.includes(t)));
+      if (!achados.length) { const v = document.createElement('div'); v.className = 'vazio'; v.textContent = 'Nenhuma série encontrada'; res.append(v); return; }
+      for (const x of achados) {
+        const linha = document.createElement('div'); linha.className = 'achado';
+        const cam = document.createElement('div'); cam.className = 'caminho';
+        cam.textContent = x.f.nome + (x.t.nome ? ' › ' + x.t.nome : '');
+        linha.append(criarItem(x.id), cam); res.append(linha);
+      }
+      marcarMenus();
+    };
+    inp.onkeydown = e => { if (e.key === 'Escape') { inp.value = ''; inp.oninput(); } };
+  }
+
   function montarFontes() {
     const box = $('fontes');
+    montarBusca(box);
     for (const f of FONTES) {
       const d = document.createElement('details'); d.className = 'sec'; d.open = true;
       const s = document.createElement('summary');
@@ -624,15 +663,7 @@
           ss.innerHTML = `<span>${esc(t.nome)}</span><span class="cont" data-conta="${esc(t.series.join(','))}"></span>`;
           sub.append(ss); corpo.append(sub); onde = sub;
         }
-        for (const id of t.series) {
-          const it = document.createElement('button');
-          it.className = 'item'; it.dataset.id = id; it.setAttribute('role', 'checkbox');
-          it.style.setProperty('--c', `var(${CAT[id].cor})`);
-          it.innerHTML = `<span class="cx"></span><span>${esc(CAT[id].nome)}</span><span class="u">${esc(CAT[id].unid)}</span>`;
-          it.title = CAT[id].nome + ' · ' + CAT[id].unid + ' · ' + CAT[id].freq;
-          it.onclick = () => alternar(id);
-          l.append(it);
-        }
+        for (const id of t.series) l.append(criarItem(id));
         onde.append(l);
       }
       d.append(s, corpo); box.append(d);
