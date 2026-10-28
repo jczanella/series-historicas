@@ -566,14 +566,6 @@
       el.append(x); r.append(el);
     });
     if (st.pinos.length === 2) {
-      for (const id of ativos()) {
-        const f = mede(id);
-        if (!f) continue;
-        const m = document.createElement('span'); m.className = 'medida'; m.style.setProperty('--c', `var(${CAT[id].cor})`);
-        m.title = CAT[id].nome;
-        m.innerHTML = `<span class="k"></span><span class="v ${classe(f.d)}">${esc(f.txtLongo || f.txt)}</span>${f.sub ? `<span class="s">${esc(f.sub)}</span>` : ''}`;
-        r.append(m);
-      }
       const z = document.createElement('button'); z.className = 'acao'; z.textContent = 'Zoom em A–B';
       z.onclick = () => aplicarPeriodo(st.pinos[0], st.pinos[1]);
       r.append(z);
@@ -584,6 +576,42 @@
     const l = document.createElement('button'); l.className = 'acao'; l.textContent = 'Limpar';
     l.onclick = limparPinos;
     r.append(l);
+    if (st.pinos.length === 2) r.append(tabelaAB());
+  }
+
+  // tabela A × B: série | valor em A | valor em B | variação (% ou p.p.) | diferença na unidade (quando faz sentido)
+  function tabelaAB() {
+    const caixa = document.createElement('div'); caixa.className = 'tab-ab';
+    const t = document.createElement('table');
+    const cab = t.createTHead().insertRow();
+    for (const [txt, cls] of [['Série', ''], ['A · ' + fmtData(st.pinos[0]), 'n'], ['B · ' + fmtData(st.pinos[1]), 'n'], ['Variação', 'n'], ['Diferença', 'n']]) {
+      const th = document.createElement('th'); th.textContent = txt; if (cls) th.className = cls; cab.append(th);
+    }
+    const corpo = t.createTBody();
+    st.grupos.forEach((g, gi) => g.forEach((id, k) => {
+      const a = brutos(id), p = pontoEm(a, st.pinos[0]), q = pontoEm(a, st.pinos[1]);
+      const tr = corpo.insertRow();
+      if (gi > 0 && k === 0) tr.className = 'sep';
+      const nome = tr.insertCell();
+      nome.innerHTML = `<span class="k${CAT[id].traco ? ' traco' : ''}" style="--c:var(${CAT[id].cor})"></span>`;
+      nome.append(document.createTextNode(CAT[id].nome));
+      const celula = (txt, cls = 'n', sub = '') => {
+        const td = tr.insertCell(); td.className = cls; td.textContent = txt;
+        if (sub) { const s = document.createElement('div'); s.className = 's'; s.textContent = sub; td.append(s); }
+      };
+      if (!p || !q || q[0] <= p[0]) { celula('—'); celula(q ? fmtVal(id, q[1]) : '—'); celula('sem dado em A', 'n s'); celula(''); return; }
+      celula(fmtVal(id, p[1])); celula(fmtVal(id, q[1]));
+      const dif = q[1] - p[1], anos = (q[0] - p[0]) / DIA / 365.25;
+      if (CAT[id].unid[0] === '%') {
+        celula(fmtPP(dif), 'n v ' + classe(dif)); celula('');
+      } else {
+        const ok = p[1] > 0 && q[1] > 0, f = q[1] / p[1] - 1;
+        celula(ok ? fmtP(f) : '—', 'n v ' + (ok ? classe(f) : ''), ok && CAT[id].tipo === 'nivel' && anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + ' a.a.' : '');
+        celula(fmtDif(id, dif), 'n ' + classe(dif));
+      }
+    }));
+    caixa.append(t);
+    return caixa;
   }
 
   // ---------- painel ----------

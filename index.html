@@ -256,6 +256,18 @@ details.sub > summary:hover { color: var(--fg); }
   height: 24px; border-radius: 6px; padding: 0 8px;
 }
 .pino button:hover, .acao:hover { background: var(--hover); color: var(--fg); }
+.tab-ab { flex-basis: 100%; overflow-x: auto; }
+.tab-ab table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.tab-ab th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.tab-ab td { padding: 5px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; color: var(--fg2); vertical-align: top; }
+.tab-ab tr.sep td { border-top: 2px solid var(--line); }
+.tab-ab td:first-child { color: var(--fg); }
+.tab-ab .n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tab-ab .v { font-weight: 600; }
+.tab-ab .up { color: var(--up); } .tab-ab .down { color: var(--down); }
+.tab-ab .s { font-size: 11px; color: var(--muted); font-weight: 400; }
+.tab-ab .k { display: inline-block; width: 14px; height: 0; border-top: 3px solid var(--c); border-radius: 2px; margin-right: 8px; vertical-align: middle; }
+.tab-ab .k.traco { border-top-style: dashed; }
 .medida { font-family: var(--mono); font-size: 13px; display: inline-flex; gap: 8px; align-items: center; }
 .medida .k { width: 12px; height: 0; border-top: 3px solid var(--c); }
 .medida .v { font-weight: 500; font-size: 14px; }
@@ -410,7 +422,7 @@ details.sub > summary:hover { color: var(--fg); }
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=9e7038dd3a"></script>
+<script src="app.js?v=553b8f097f"></script>
 <script data-goatcounter="https://jczanella.goatcounter.com/count" async src="https://gc.zgo.at/count.v5.js" crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>
 </body>
 </html>
