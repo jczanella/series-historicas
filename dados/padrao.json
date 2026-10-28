@@ -10,7 +10,7 @@
    ["dolar"]
   ],
   "ref": "ibovespa",
-  "freq": "d",
+  "freq": "m",
   "modo": "val",
   "log": false,
   "eixos": "escala",
@@ -21,7 +21,7 @@
   "ini": 883027241113,
   "fim": 1793145600000,
   "ateFim": true,
-  "pinos": [1672617600000, 1793145600000],
+  "pinos": [1675123200000, 1793145600000],
   "pinoFim": true
  }
 }
