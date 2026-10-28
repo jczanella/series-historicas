@@ -19,8 +19,15 @@ estilo = re.search(r"<style>.*?</style>", fonte, re.S).group(0)
 corpo = fonte[fonte.index("</style>") + len("</style>"):fonte.index("<script src=")].strip()
 script = re.search(r"<script>\n(.*?)</script>", fonte, re.S).group(1)
 
-# Política de segurança: só scripts do próprio site, dados só do próprio site, fontes do Google.
-CSP = ("default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self' data:; "
+# Estatísticas de acesso: GoatCounter (sem cookies). Script em versão fixa com hash de integridade:
+# se o arquivo do servidor for alterado, o navegador se recusa a executá-lo.
+GC_CONTA = "https://jczanella.goatcounter.com"
+GC_SCRIPT = ('<script data-goatcounter="' + GC_CONTA + '/count" async src="https://gc.zgo.at/count.v5.js" '
+             'crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>')
+
+# Política de segurança: só scripts do próprio site (e o contador), dados só do próprio site, fontes do Google.
+CSP = ("default-src 'none'; script-src 'self' https://gc.zgo.at; connect-src 'self' " + GC_CONTA + "; "
+       "img-src 'self' data: " + GC_CONTA + "; "
        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; "
        "base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'")
 
@@ -52,6 +59,7 @@ html = f"""<!doctype html>
 {corpo}
 <script src="vendor/echarts.min.js"></script>
 <script src="app.js?v={versao}"></script>
+{GC_SCRIPT}
 </body>
 </html>
 """
