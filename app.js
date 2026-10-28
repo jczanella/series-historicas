@@ -10,7 +10,8 @@
     { nome: 'Sarney', ini: '1985-03-15', fim: '1990-03-14', cor: '--g-sarney' },
     { nome: 'Collor', ini: '1990-03-15', fim: '1992-10-01', cor: '--g-collor' },
     { nome: 'Itamar', ini: '1992-10-02', fim: '1994-12-31', cor: '--g-itamar' },
-    { nome: 'FHC', ini: '1995-01-01', fim: '2002-12-31', cor: '--g-fhc' },
+    { nome: 'FHC 1', ini: '1995-01-01', fim: '1998-12-31', cor: '--g-fhc' },
+    { nome: 'FHC 2', ini: '1999-01-01', fim: '2002-12-31', cor: '--g-fhc', forte: true },
     { nome: 'Lula 1', ini: '2003-01-01', fim: '2006-12-31', cor: '--g-lula' },
     { nome: 'Lula 2', ini: '2007-01-01', fim: '2010-12-31', cor: '--g-lula', forte: true },
     { nome: 'Dilma 1', ini: '2011-01-01', fim: '2014-12-31', cor: '--g-dilma' },
@@ -22,13 +23,139 @@
   ].map(g => ({ ...g, t0: Date.parse(g.ini), t1: g.fim ? Date.parse(g.fim) : Infinity }));
   const govEm = ts => GOVERNOS.find(g => ts >= g.t0 && ts <= g.t1);
 
+  // ---------- idioma (português / inglês, lembrado neste navegador) ----------
+  // [português, inglês]; elementos fixos da página usam data-t (texto), data-t-title, data-t-ph e data-t-aria
+  const TXT = {
+    titulo: ['Séries Históricas', 'Historical Series'], idioma: ['Idioma', 'Language'],
+    tema: ['Tema', 'Theme'], claro: ['☀ Claro', '☀ Light'], escuro: ['☾ Escuro', '☾ Dark'],
+    temaClaro: ['Tema claro', 'Light theme'], temaEscuro: ['Tema escuro', 'Dark theme'],
+    menu: ['Filtros e séries', 'Filters and series'], voltarGrafico: ['↑ Voltar ao gráfico', '↑ Back to chart'],
+    visoes: ['Visões salvas', 'Saved views'], nomeVisao: ['Nome da visão', 'View name'],
+    salvar: ['Salvar', 'Save'], salvo: ['Salvo', 'Saved'], ficaSalvo: ['Fica salvo neste navegador', 'Saved in this browser'],
+    limparTudo: ['Limpar tudo', 'Reset all'], confirmaLimpar: ['Confirmar limpeza', 'Confirm reset'],
+    limparTit: ['Volta à visão padrão do site (as visões com nome continuam)', 'Back to the site default view (named views are kept)'],
+    periodo: ['Período', 'Period'], ano: ['Ano', 'YTD'], anoTit: ['Desde o início do ano', 'Since the start of the year'],
+    p1a: ['1A', '1Y'], p5a: ['5A', '5Y'], p10a: ['10A', '10Y'], max: ['Máx', 'Max'],
+    dataIni: ['Data inicial', 'Start date'], dataFim: ['Data final', 'End date'],
+    freq: ['Frequência', 'Frequency'], diario: ['Diário', 'Daily'], mensal: ['Mensal', 'Monthly'],
+    exibicao: ['Exibição', 'Display'], unidade: ['Unidade', 'Unit'], valor: ['Valor', 'Value'],
+    valorTit: ['Valor original da série', 'Original value of the series'],
+    pctTit: ['Variação desde o início do período', 'Change since the start of the period'],
+    escala: ['Escala', 'Scale'], logTit: ['Escala logarítmica: mesma distância = mesma variação %', 'Log scale: same distance = same % change'],
+    eixoY: ['Eixo Y', 'Y axis'], comum: ['Comum', 'Shared'], comumTit: ['Uma escala para o gráfico todo', 'One scale for the whole chart'],
+    porUnid: ['Por unidade', 'Per unit'],
+    porUnidTit: ['Um eixo por unidade (pontos, %, R$…), cada um ajustável na barra ao lado do gráfico', 'One axis per unit (points, %, R$…), each adjustable on the bar beside the chart'],
+    resetEsc: ['Voltar as escalas ao padrão', 'Reset scales'],
+    contexto: ['Contexto', 'Context'], governos: ['Governos', 'Governments'], govTit: ['Faixas dos mandatos presidenciais', 'Presidential terms shown as bands'],
+    irFiltros: ['☰ Séries, período e filtros', '☰ Series, period and filters'],
+    gruposAria: ['Gráficos: arraste uma série para juntar ou separar', 'Charts: drag a series to merge or split'],
+    inicio: ['Início', 'Start'], fim: ['Fim', 'End'], maxima: ['Máxima', 'High'], minima: ['Mínima', 'Low'],
+    govsAria: ['Governos: clique para medir o mandato', 'Governments: click to measure the term'],
+    carregando: ['Carregando…', 'Loading…'], erro: ['Não foi possível carregar os dados', 'Could not load the data'],
+    noTri: ['no trimestre', 'over the quarter'], noAno: ['no ano', 'over the year'], noMes: ['no mês', 'over the month'],
+    noDia: ['no dia', 'over the day'], desdeA: ['desde A', 'since A'],
+    dica: ['<span><b>Clique</b> fixa um ponto</span><span><b>2 pontos</b> medem o período</span><span><b>Roda / pinça</b> zoom · <b>arrastar</b> move</span>',
+      '<span><b>Click</b> pins a point</span><span><b>2 points</b> measure the period</span><span><b>Wheel / pinch</b> zoom · <b>drag</b> pans</span>'],
+    removerPonto: ['Remover ponto', 'Remove point'], zoomAB: ['Zoom em A–B', 'Zoom to A–B'],
+    outroPonto: ['clique em outro ponto para medir', 'click another point to measure'], limpar: ['Limpar', 'Clear'],
+    serie: ['Série', 'Series'], variacao: ['Variação', 'Change'], diferenca: ['Diferença', 'Difference'],
+    semA: ['sem dado em A', 'no data at A'], semB: ['sem dado em B', 'no data at B'], mesmoAB: ['mesmo dado em A e B', 'same data point at A and B'],
+    fontes: ['Fontes: ', 'Sources: '], atualizado: [' · atualizado em ', ' · updated '],
+    buscaPh: ['Buscar série (ex.: selic, pib, dólar)', 'Search series (e.g. selic, gdp, dollar)'], buscaAria: ['Buscar série', 'Search series'],
+    nada: ['Nenhuma série encontrada', 'No series found'], series: ['Séries · ', 'Series · '],
+    ordemTit: ['Arraste para mudar a ordem dos gráficos', 'Drag to reorder the charts'], separar: ['＋ arraste aqui para separar', '＋ drag here to split'],
+    chipTit: ['Clique: referência dos números · Arraste: juntar ou separar gráficos', 'Click: reference for the numbers · Drag: merge or split charts'],
+    eloSolto: ['Escala própria. Clique para ligar à escala das outras séries de mesma unidade', 'Own scale. Click to link it to the other series with the same unit'],
+    eloLigado: ['Escala ligada às outras séries de mesma unidade. Clique para soltar', 'Scale linked to the other series with the same unit. Click to unlink'],
+    remover: ['Remover ', 'Remove '], naoCarregou: ['não carregou', 'failed to load'], hoje: ['hoje', 'now'],
+    govChipTit: ['Medir as séries neste governo · clique num vizinho para juntar mandatos seguidos', 'Measure the series in this term · click a neighbour to join consecutive terms'],
+    padraoSite: ['Padrão do site', 'Site default'], abrirPadrao: ['Abrir a visão padrão do site', 'Open the site default view'],
+    abrirVisao: ['Abrir esta visão', 'Open this view'], apagarVisao: ['Apagar a visão ', 'Delete view '],
+    dias: [' dias', ' days'], aa: [' a.a.', ' p.a.'], pp: [' p.p.', ' pp'],
+  };
+  // catálogo em inglês (o catálogo vem em português de dados/catalogo.json); série sem nome aqui aparece em português
+  const EN = {
+    series: {
+      pib_tt: 'GDP q/q (seasonally adj.)', pib_4t: 'GDP over 12 months (4 quarters)', pib: 'GDP vs same quarter of previous year',
+      pib_ano: 'GDP year to date', pib_anual: 'Annual GDP (growth)', pib_valor: 'GDP in R$ (12 months)', pib_indice: 'Real GDP (index, s.a.)',
+      taxa_invest: 'Investment rate (GFCF/GDP)', pib_agro: 'Agriculture', pib_ind: 'Industry', pib_serv: 'Services',
+      pib_transf: 'Manufacturing', pib_extr: 'Mining and quarrying', pib_constr: 'Construction', pib_elet: 'Electricity, gas and water',
+      pib_com: 'Trade', pib_transp: 'Transport and storage', pib_info: 'Information and communication', pib_fin: 'Financial activities',
+      pib_imob: 'Real estate activities', pib_adm: 'Public administration, health and education', pib_outros: 'Other services',
+      pib_familias: 'Household consumption', pib_governo: 'Government consumption', pib_fbcf: 'Investment (GFCF)',
+      pib_exp: 'Exports of goods and services', pib_imp: 'Imports of goods and services',
+      selic_meta: 'Selic target rate', ipca_12m: 'IPCA inflation, 12 months', ipca_acum: 'IPCA cumulative', selic_acum: 'Selic cumulative',
+      ipca_mensal: 'IPCA monthly', igpm_acum: 'IGP-M cumulative', cdi_acum: 'CDI cumulative', inpc_acum: 'INPC cumulative',
+      selic_focus: 'Expected Selic, end of next year (Focus)', ipca_focus: 'Expected IPCA 12 months ahead (Focus)',
+      pib_us: 'GDP in US$ (12 months)', ibcbr: 'Economic activity index (IBC-Br)', desocupacao: 'Unemployment',
+      icc: 'Cost of credit (ICC)', concessoes: 'New loans, non-earmarked',
+      bal_saldo12: 'Trade balance (12 months)', bal_exp12: 'Exports (12 months)', bal_imp12: 'Imports (12 months)',
+      bal_corrente12: 'Total trade (12 months)', bal_saldo: 'Monthly trade balance', bal_exp: 'Monthly exports', bal_imp: 'Monthly imports',
+      bal_merc_exp12: 'General merchandise exports', bal_merc_imp12: 'General merchandise imports', bal_merc_saldo12: 'General merchandise balance',
+      bal_ouro_exp12: 'Non-monetary gold exports', bal_ouro_imp12: 'Non-monetary gold imports', bal_merch12: 'Merchanting balance',
+      serv_saldo12: 'Services balance', serv_rec12: 'Services receipts', serv_desp12: 'Services payments',
+      dolar: 'US dollar (PTAX)', trans_corr: 'Current account', idp: 'Net FDI', reservas: 'International reserves', euro: 'Euro (PTAX)',
+      primario: 'Primary balance', nominal: 'Nominal balance',
+      juro_pre_1a: '1-year fixed rate', juro_pre_2a: '2-year fixed rate', juro_pre_5a: '5-year fixed rate',
+    },
+    temas: {
+      'PIB — principais': 'GDP — headline', 'PIB — setores (acum. 4 trimestres)': 'GDP — sectors (4-quarter cumulative)',
+      'PIB — demanda (acum. 4 trimestres)': 'GDP — demand (4-quarter cumulative)', 'Juros e inflação': 'Interest rates and inflation',
+      'Juros futuros e expectativas': 'Future rates and expectations', 'Atividade e emprego': 'Activity and employment',
+      'Crédito': 'Credit', 'Balança comercial': 'Trade balance', 'Balança comercial — subgrupos (12 meses)': 'Trade balance — subgroups (12 months)',
+      'Serviços (12 meses)': 'Services (12 months)', 'Setor externo e câmbio': 'External sector and exchange rates',
+      'Fiscal (+ superávit, − déficit)': 'Fiscal (+ surplus, − deficit)', 'Juros futuros (prefixados)': 'Future rates (fixed-rate bonds)',
+    },
+    fontes: { ibge: ['IBGE', 'sidra.ibge.gov.br · National Accounts'], bcb: ['Central Bank', 'bcb.gov.br'],
+      tesouro: ['National Treasury', 'tesourotransparente.gov.br · Tesouro Direto'] },
+    unid: { 'R$ tri': 'R$ tn', 'R$ bi': 'R$ bn', 'US$ bi': 'US$ bn', 'US$ tri': 'US$ tn', 'índice': 'index',
+      '% a.a.': '% p.a.', '% a.m.': '% p.m.', '% PIB': '% GDP' },
+    freq: { 'diária': 'daily', 'trimestral': 'quarterly', 'mensal': 'monthly', 'anual': 'annual', '12 meses': '12 months' },
+  };
+  let LANG = (() => {
+    try { const l = localStorage.getItem('idioma'); if (l === 'pt' || l === 'en') return l; } catch (e) {}
+    // sem escolha salva: português para navegador em português, inglês para os demais
+    return (navigator.languages || [navigator.language || 'pt']).some(l => /^pt/i.test(l)) ? 'pt' : 'en';
+  })();
+  const t = k => TXT[k][LANG === 'en' ? 1 : 0];
+  const unidTxt = id => LANG === 'en' ? EN.unid[CAT[id].unid] ?? CAT[id].unid : CAT[id].unid;
+  const freqTxt = id => LANG === 'en' ? EN.freq[CAT[id].freq] ?? CAT[id].freq : CAT[id].freq;
+  function traduzirPagina() {
+    document.documentElement.lang = LANG === 'en' ? 'en' : 'pt-BR';
+    document.title = t('titulo');
+    document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+    document.querySelectorAll('[data-t-title]').forEach(el => { el.title = t(el.dataset.tTitle); });
+    document.querySelectorAll('[data-t-ph]').forEach(el => { el.placeholder = t(el.dataset.tPh); });
+    document.querySelectorAll('[data-t-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.tAria)));
+    document.querySelectorAll('#seg-idioma button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === LANG));
+  }
+  // troca nomes, fontes e temas do catálogo; o original em português fica em _pt
+  function traduzirCatalogo() {
+    const en = LANG === 'en';
+    for (const [id, s] of Object.entries(CAT)) {
+      s._pt ??= { nome: s.nome, origem: s.origem || '' };
+      s.nome = en && EN.series[id] || s._pt.nome;
+      s.origem = !en ? s._pt.origem : s._pt.origem.replace('Banco Central do Brasil', 'Central Bank of Brazil')
+        .replace('Tesouro Nacional', 'National Treasury').replace('tabela', 'table')
+        .replace('fechamento diário', 'daily close').replace('R$ bilhões', 'R$ billion');
+    }
+    for (const f of FONTES) {
+      f._pt ??= { nome: f.nome, site: f.site };
+      const e = en && EN.fontes[f.id];
+      f.nome = e ? e[0] : f._pt.nome; f.site = e ? e[1] : f._pt.site;
+      for (const tm of f.temas) { if (tm._pt === undefined) tm._pt = tm.nome; tm.nome = en && tm._pt && EN.temas[tm._pt] || tm._pt; }
+    }
+  }
+  traduzirPagina();
+
   const DIA = 864e5;
   const $ = id => document.getElementById(id);
-  const fmtN = (v, d) => v.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const loc = () => LANG === 'en' ? 'en-GB' : 'pt-BR';
+  const fmtN = (v, d) => v.toLocaleString(loc(), { minimumFractionDigits: d, maximumFractionDigits: d });
   const fmtP = (f, d = 2) => (f > 0 ? '+' : f < 0 ? '−' : '') + fmtN(Math.abs(f) * 100, d) + '%';
-  const fmtPP = d => (d > 0 ? '+' : d < 0 ? '−' : '') + fmtN(Math.abs(d), 2) + ' p.p.';
-  const fmtD = ts => new Date(ts).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-  const fmtM = ts => new Date(ts).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric', timeZone: 'UTC' }).replace('. de ', ' ').replace(' de ', ' ');
+  const fmtPP = d => (d > 0 ? '+' : d < 0 ? '−' : '') + fmtN(Math.abs(d), 2) + t('pp');
+  const fmtD = ts => new Date(ts).toLocaleDateString(loc(), { timeZone: 'UTC' });
+  const fmtM = ts => new Date(ts).toLocaleDateString(loc(), { month: 'short', year: 'numeric', timeZone: 'UTC' }).replace('. de ', ' ').replace(' de ', ' ');
   const fmtData = ts => st.freq === 'm' ? fmtM(ts) : fmtD(ts);
   const iso = ts => new Date(ts).toISOString().slice(0, 10);
   const classe = f => f > 0 ? 'up' : f < 0 ? 'down' : '';
@@ -38,7 +165,7 @@
     if (u === 'pts') return fmtN(v, Math.abs(v) < 1000 ? 2 : 0);
     if (u === 'R$') return 'R$ ' + fmtN(v, 2);
     const m = u.match(/^(R\$|US\$) (bi|tri)$/);
-    if (m) return (v < 0 ? '−' : '') + m[1] + ' ' + fmtN(Math.abs(v), m[2] === 'tri' ? 2 : 1) + ' ' + m[2];
+    if (m) return (v < 0 ? '−' : '') + m[1] + ' ' + fmtN(Math.abs(v), m[2] === 'tri' ? 2 : 1) + ' ' + (LANG === 'en' ? { bi: 'bn', tri: 'tn' }[m[2]] : m[2]);
     if (u[0] === '%') return fmtN(v, 2) + '%';
     return fmtN(v, v < 1000 ? 1 : 0);
   }
@@ -61,6 +188,21 @@
   new MutationObserver(marcaTema).observe(raiz, { attributes: true, attributeFilter: ['data-theme'] });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', marcaTema);
   marcaTema();
+
+  // troca de idioma: textos fixos na hora; menus, governos, visões e gráfico são montados de novo
+  function trocarIdioma(l) {
+    if (l === LANG) return;
+    LANG = l;
+    try { localStorage.setItem('idioma', l); } catch (e) {}
+    traduzirPagina();
+    if (!chart) return;
+    traduzirCatalogo();
+    $('fontes').textContent = ''; montarFontes();
+    $('govs').textContent = ''; governos();
+    montarVisoes();
+    atualizarTudo();
+  }
+  $('seg-idioma').onclick = e => { const v = e.target.closest('button')?.dataset.v; if (v) trocarIdioma(v); };
 
   // grupos: cada grupo é um painel do gráfico, de cima para baixo
   const st = { freq: 'd', modo: 'val', log: false, ini: null, fim: null, pinos: [], grupos: [['ibovespa']], ref: 'ibovespa', gov: false,
@@ -440,7 +582,7 @@
     const dias = Math.round((q[0] - p[0]) / DIA), anos = dias / 365.25;
     if (bruto(id)) return { d: q[1] - p[1], txt: fmtDif(id, q[1] - p[1]), sub: fmtVal(id, p[1]) + ' → ' + fmtVal(id, q[1]), dias };
     const f = q[1] / p[1] - 1;
-    return { d: f, txt: fmtP(f, 1), txtLongo: fmtP(f), sub: anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + ' a.a.' : '', dias };
+    return { d: f, txt: fmtP(f, 1), txtLongo: fmtP(f), sub: anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + t('aa') : '', dias };
   }
 
   // painel sob o ponteiro: medido antes do gráfico tratar o evento (listener em captura no contêiner)
@@ -475,12 +617,12 @@
         if (poucas && i > 0 && !CAT[id].degrau) {
           const r = taxa ? [fmtDif(id, p[1] - a[i - 1][1]), p[1] - a[i - 1][1]] : [fmtP(p[1] / a[i - 1][1] - 1), p[1] / a[i - 1][1] - 1];
           const fq = CAT[id].freq;
-          const per = fq === 'trimestral' ? 'no trimestre' : fq === 'anual' ? 'no ano' : st.freq === 'm' || fq !== 'diária' ? 'no mês' : 'no dia';
+          const per = t(fq === 'trimestral' ? 'noTri' : fq === 'anual' ? 'noAno' : st.freq === 'm' || fq !== 'diária' ? 'noMes' : 'noDia');
           linhas.push([per, ...r]);
         }
         if (st.pinos.length) {
           const pa = pontoEm(a, st.pinos[0]);
-          if (pa && pa[0] < p[0]) linhas.push(['desde A', ...(taxa ? [fmtDif(id, p[1] - pa[1]), p[1] - pa[1]] : [fmtP(p[1] / pa[1] - 1), p[1] / pa[1] - 1])]);
+          if (pa && pa[0] < p[0]) linhas.push([t('desdeA'), ...(taxa ? [fmtDif(id, p[1] - pa[1]), p[1] - pa[1]] : [fmtP(p[1] / pa[1] - 1), p[1] / pa[1] - 1])]);
         }
         for (const [r, txt, f] of linhas)
           h += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;padding-left:20px">
@@ -563,25 +705,25 @@
     const r = $('rodape');
     r.textContent = '';
     if (!st.pinos.length) {
-      r.innerHTML = '<div class="dica"><span><b>Clique</b> fixa um ponto</span><span><b>2 pontos</b> medem o período</span><span><b>Roda / pinça</b> zoom · <b>arrastar</b> move</span></div>';
+      r.innerHTML = '<div class="dica">' + t('dica') + '</div>';
       return;
     }
     st.pinos.forEach((ts, i) => {
       const el = document.createElement('span'); el.className = 'pino';
       el.innerHTML = `<span class="l">${st.pinos.length === 2 ? 'AB'[i] : 'A'}</span><span class="num">${esc(fmtData(ts))}</span>`;
-      const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Remover ponto');
+      const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', t('removerPonto'));
       x.onclick = () => { st.pinos.splice(i, 1); atualizarSeries(); rodape(); atualizarUI(); };
       el.append(x); r.append(el);
     });
     if (st.pinos.length === 2) {
-      const z = document.createElement('button'); z.className = 'acao'; z.textContent = 'Zoom em A–B';
+      const z = document.createElement('button'); z.className = 'acao'; z.textContent = t('zoomAB');
       z.onclick = () => aplicarPeriodo(st.pinos[0], st.pinos[1]);
       r.append(z);
     } else {
-      const d = document.createElement('span'); d.className = 'dica'; d.textContent = 'clique em outro ponto para medir';
+      const d = document.createElement('span'); d.className = 'dica'; d.textContent = t('outroPonto');
       r.append(d);
     }
-    const l = document.createElement('button'); l.className = 'acao'; l.textContent = 'Limpar';
+    const l = document.createElement('button'); l.className = 'acao'; l.textContent = t('limpar');
     l.onclick = limparPinos;
     r.append(l);
     if (st.pinos.length === 2) r.append(tabelaAB());
@@ -590,12 +732,12 @@
   // tabela A × B: série | valor em A | valor em B | variação (% ou p.p.) | diferença na unidade (quando faz sentido)
   function tabelaAB() {
     const caixa = document.createElement('div'); caixa.className = 'tab-ab';
-    const t = document.createElement('table');
-    const cab = t.createTHead().insertRow();
-    for (const [txt, cls] of [['Série', ''], ['A · ' + fmtData(st.pinos[0]), 'n'], ['B · ' + fmtData(st.pinos[1]), 'n'], ['Variação', 'n'], ['Diferença', 'n']]) {
+    const tab = document.createElement('table');
+    const cab = tab.createTHead().insertRow();
+    for (const [txt, cls] of [[t('serie'), ''], ['A · ' + fmtData(st.pinos[0]), 'n'], ['B · ' + fmtData(st.pinos[1]), 'n'], [t('variacao'), 'n'], [t('diferenca'), 'n']]) {
       const th = document.createElement('th'); th.textContent = txt; if (cls) th.className = cls; cab.append(th);
     }
-    const corpo = t.createTBody();
+    const corpo = tab.createTBody();
     st.grupos.forEach((g, gi) => g.forEach((id, k) => {
       const a = brutos(id), p = pontoEm(a, st.pinos[0]), q = pontoEm(a, st.pinos[1]);
       const tr = corpo.insertRow();
@@ -609,7 +751,7 @@
       };
       if (!p || !q || q[0] <= p[0]) {
         celula(p ? fmtVal(id, p[1]) : '—'); celula(q ? fmtVal(id, q[1]) : '—');
-        celula(!p ? 'sem dado em A' : !q ? 'sem dado em B' : 'mesmo dado em A e B', 'n s'); celula(''); return;
+        celula(t(!p ? 'semA' : !q ? 'semB' : 'mesmoAB'), 'n s'); celula(''); return;
       }
       celula(fmtVal(id, p[1])); celula(fmtVal(id, q[1]));
       const dif = q[1] - p[1], anos = (q[0] - p[0]) / DIA / 365.25;
@@ -617,11 +759,11 @@
         celula(fmtPP(dif), 'n v ' + classe(dif)); celula('');
       } else {
         const ok = p[1] > 0 && q[1] > 0, f = q[1] / p[1] - 1;
-        celula(ok ? fmtP(f) : '—', 'n v ' + (ok ? classe(f) : ''), ok && CAT[id].tipo === 'nivel' && anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + ' a.a.' : '');
+        celula(ok ? fmtP(f) : '—', 'n v ' + (ok ? classe(f) : ''), ok && CAT[id].tipo === 'nivel' && anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + t('aa') : '');
         celula(fmtDif(id, dif), 'n ' + classe(dif));
       }
     }));
-    caixa.append(t);
+    caixa.append(tab);
     return caixa;
   }
 
@@ -638,14 +780,14 @@
       const p = fatia[0], q = fatia[fatia.length - 1];
       let mx = p, mn = p;
       for (const x of fatia) { if (x[1] > mx[1]) mx = x; if (x[1] < mn[1]) mn = x; }
-      const anos = (q[0] - p[0]) / DIA / 365.25, dias = fmtN(Math.round((q[0] - p[0]) / DIA), 0) + ' dias';
+      const anos = (q[0] - p[0]) / DIA / 365.25, dias = fmtN(Math.round((q[0] - p[0]) / DIA), 0) + t('dias');
       if (taxa) {
         $('st-var').textContent = fmtDif(id, q[1] - p[1]); $('st-var').className = 'v';
         $('st-var-s').textContent = dias;
       } else {
         const f = q[1] / p[1] - 1;
         $('st-var').textContent = fmtP(f); $('st-var').className = 'v ' + classe(f);
-        $('st-var-s').textContent = anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + ' a.a.' : dias;
+        $('st-var-s').textContent = anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + t('aa') : dias;
       }
       $('st-ini').textContent = fmtVal(id, p[1]); $('st-ini-s').textContent = fmtData(p[0]);
       $('st-fim').textContent = fmtVal(id, q[1]); $('st-fim-s').textContent = fmtData(q[0]);
@@ -676,7 +818,7 @@
   function cabecalho() {
     const nomes = [...new Set(ativos().map(i => FONTES.find(f => f.temas.some(t => t.series.includes(i))).nome))];
     const atual = Math.max(...ativos().map(i => Date.parse(series[i].meta.atualizado)));
-    $('fonte').textContent = 'Fontes: ' + nomes.join(', ') + ' · atualizado em ' + fmtD(atual);
+    $('fonte').textContent = t('fontes') + nomes.join(', ') + t('atualizado') + fmtD(atual);
   }
 
   // ---------- séries por fonte (menu lateral) ----------
@@ -684,8 +826,8 @@
     const it = document.createElement('button');
     it.className = 'item'; it.dataset.id = id; it.setAttribute('role', 'checkbox');
     it.style.setProperty('--c', `var(${CAT[id].cor})`);
-    it.innerHTML = `<span class="cx"></span><span>${esc(CAT[id].nome)}</span><span class="u">${esc(CAT[id].unid)}</span>`;
-    it.title = CAT[id].nome + ' · ' + CAT[id].unid + ' · ' + CAT[id].freq;
+    it.innerHTML = `<span class="cx"></span><span>${esc(CAT[id].nome)}</span><span class="u">${esc(unidTxt(id))}</span>`;
+    it.title = CAT[id].nome + ' · ' + unidTxt(id) + ' · ' + freqTxt(id);
     it.onclick = () => alternar(id);
     return it;
   }
@@ -695,18 +837,20 @@
     const wrap = document.createElement('div'); wrap.className = 'busca';
     const inp = document.createElement('input');
     inp.type = 'search'; inp.id = 'busca'; inp.autocomplete = 'off';
-    inp.placeholder = 'Buscar série (ex.: selic, pib, dólar)'; inp.setAttribute('aria-label', 'Buscar série');
+    inp.placeholder = t('buscaPh'); inp.setAttribute('aria-label', t('buscaAria'));
     const res = document.createElement('div'); res.className = 'resultados'; res.hidden = true;
     wrap.append(inp, res); box.append(wrap);
     const indice = FONTES.flatMap(f => f.temas.flatMap(t => t.series.map(id => ({ id, f, t,
-      chave: semAcento([CAT[id].nome, CAT[id].unid, CAT[id].freq, t.nome || '', f.nome, CAT[id].origem || ''].join(' ')) }))));
+      // nos dois idiomas: "pib" e "gdp" acham a mesma série
+      chave: semAcento([CAT[id].nome, CAT[id]._pt?.nome, CAT[id].unid, unidTxt(id), CAT[id].freq, freqTxt(id), t.nome || '', t._pt || '',
+        f.nome, f._pt?.nome, CAT[id].origem || ''].join(' ')) }))));
     inp.oninput = () => {
       const termos = semAcento(inp.value.trim()).split(/\s+/).filter(Boolean);
       document.querySelectorAll('#fontes > details').forEach(d => { d.hidden = termos.length > 0; });
       res.hidden = !termos.length; res.textContent = '';
       if (!termos.length) return;
       const achados = indice.filter(x => termos.every(t => x.chave.includes(t)));
-      if (!achados.length) { const v = document.createElement('div'); v.className = 'vazio'; v.textContent = 'Nenhuma série encontrada'; res.append(v); return; }
+      if (!achados.length) { const v = document.createElement('div'); v.className = 'vazio'; v.textContent = t('nada'); res.append(v); return; }
       for (const x of achados) {
         const linha = document.createElement('div'); linha.className = 'achado';
         const cam = document.createElement('div'); cam.className = 'caminho';
@@ -724,7 +868,7 @@
     for (const f of FONTES) {
       const d = document.createElement('details'); d.className = 'sec'; d.open = true;
       const s = document.createElement('summary');
-      s.innerHTML = `<span>Séries · ${esc(f.nome)}</span><span class="cont" data-conta="${esc(f.temas.flatMap(t => t.series).join(','))}"></span>`;
+      s.innerHTML = `<span>${esc(t('series') + f.nome)}</span><span class="cont" data-conta="${esc(f.temas.flatMap(t => t.series).join(','))}"></span>`;
       const corpo = document.createElement('div'); corpo.className = 'sec-corpo';
       corpo.innerHTML = `<div class="fonte-cab"><span>${esc(f.site)}</span></div>`;
       for (const t of f.temas) {
@@ -762,7 +906,7 @@
       const el = document.createElement('div'); el.className = 'grupo'; el.dataset.grupo = gi;
       if (st.grupos.length > 1) {
         const n = document.createElement('span'); n.className = 'gn'; n.textContent = gi + 1;
-        n.title = 'Arraste para mudar a ordem dos gráficos';
+        n.title = t('ordemTit');
         n.addEventListener('pointerdown', e => arrastar(e, el, n, (sob, x) => {
           const alvo = sob?.closest('.grupo:not(.novo)');
           if (!alvo || alvo === el) return null;
@@ -782,7 +926,7 @@
     });
     if (ativos().length > 1) {
       const novo = document.createElement('div'); novo.className = 'grupo novo'; novo.dataset.grupo = 'novo';
-      novo.textContent = '＋ arraste aqui para separar';
+      novo.textContent = t('separar');
       box.append(novo);
     }
   }
@@ -791,7 +935,7 @@
     el.className = 'ativo' + (id === st.ref && ativos().length > 1 ? ' ref' : '');
     el.dataset.id = id;
     el.style.setProperty('--c', `var(${CAT[id].cor})`);
-    el.title = 'Clique: referência dos números · Arraste: juntar ou separar gráficos';
+    el.title = t('chipTit');
     const k = document.createElement('span'); k.className = 'k' + (CAT[id].traco ? ' traco' : '');
     el.append(k, document.createTextNode(CAT[id].nome));
     // elo: séries da mesma unidade no mesmo gráfico dividem o eixo; clique solta/religa
@@ -802,14 +946,13 @@
       b.innerHTML = solto
         ? '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.5 4.5 7.6 3.4a2.6 2.6 0 0 1 3.7 3.7L10.2 8.2M5.8 7.8 4.7 8.9a2.6 2.6 0 0 0 3.7 3.7l1.1-1.1M3 3l1.5 1.5M13 13l-1.5-1.5"/></svg>'
         : '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6.8 9.2 9.2 6.8M7.6 4.4l1-1a2.6 2.6 0 0 1 3.7 3.7l-1 1M8.4 11.6l-1 1a2.6 2.6 0 0 1-3.7-3.7l1-1"/></svg>';
-      b.title = solto ? 'Escala própria. Clique para ligar à escala das outras séries de mesma unidade'
-                      : 'Escala ligada às outras séries de mesma unidade. Clique para soltar';
+      b.title = t(solto ? 'eloSolto' : 'eloLigado');
       b.setAttribute('aria-label', b.title);
       b.onclick = e => { e.stopPropagation(); solto ? st.solto.delete(id) : st.solto.add(id); montarGrupos(); desenhar(); };
       el.append(b);
     }
     if (ativos().length > 1) {
-      const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label', 'Remover ' + CAT[id].nome);
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label', t('remover') + CAT[id].nome);
       x.onclick = e => { e.stopPropagation(); alternar(id); };
       el.append(x);
     }
@@ -889,7 +1032,7 @@
       atualizarTudo();
     }).catch(() => {
       it?.classList.remove('carregando');
-      if (it) it.querySelector('.u').textContent = 'não carregou';
+      if (it) it.querySelector('.u').textContent = t('naoCarregou');
     });
   }
   function atualizarTudo() {
@@ -912,12 +1055,11 @@
       if (g.t1 < Date.UTC(1993, 0, 1)) return;
       const b = document.createElement('button');
       b.className = 'gchip'; b.dataset.i = i; b.style.setProperty('--c', `var(${g.cor})`);
-      b.title = 'Medir as séries neste governo';
       const sw = document.createElement('span'); sw.className = 'sw';
       const an = document.createElement('span'); an.className = 'a';
-      an.textContent = g.ini.slice(2, 4) + '–' + (g.fim && g.t1 < Date.now() ? g.fim.slice(2, 4) : 'hoje');
+      an.textContent = g.ini.slice(2, 4) + '–' + (g.fim && g.t1 < Date.now() ? g.fim.slice(2, 4) : t('hoje'));
       b.append(sw, document.createTextNode(g.nome), an);
-      b.title = 'Medir as séries neste governo · clique num vizinho para juntar mandatos seguidos';
+      b.title = t('govChipTit');
       b.onclick = () => {
         // governos consecutivos: clicar no vizinho de uma seleção estende; clicar na ponta encolhe
         const a = brutos(st.ref), sel = govSelecionados(a);
@@ -1001,9 +1143,9 @@
     if (padraoCache) {
       const linha = document.createElement('div'); linha.className = 'visao fixa';
       const ab = document.createElement('button'); ab.className = 'abrir';
-      const nm = document.createElement('span'); nm.textContent = 'Padrão do site';
+      const nm = document.createElement('span'); nm.textContent = t('padraoSite');
       const q = document.createElement('span'); q.className = 'q'; q.textContent = '★';
-      ab.append(nm, q); ab.title = 'Abrir a visão padrão do site';
+      ab.append(nm, q); ab.title = t('abrirPadrao');
       ab.onclick = () => aplicarEstado(padraoCache);
       linha.append(ab); box.append(linha);
     }
@@ -1012,10 +1154,10 @@
       const ab = document.createElement('button'); ab.className = 'abrir';
       const nm = document.createElement('span'); nm.textContent = v.nome;
       const q = document.createElement('span'); q.className = 'q'; q.textContent = fmtD(v.quando);
-      ab.append(nm, q); ab.title = 'Abrir esta visão';
+      ab.append(nm, q); ab.title = t('abrirVisao');
       ab.onclick = () => aplicarEstado(v.estado);
       const del = document.createElement('button'); del.className = 'del'; del.textContent = '×';
-      del.setAttribute('aria-label', 'Apagar a visão ' + v.nome);
+      del.setAttribute('aria-label', t('apagarVisao') + v.nome);
       del.onclick = () => { lista.splice(i, 1); gravarLS(CHAVE_V, lista); montarVisoes(); };
       linha.append(ab, del); box.append(linha);
     });
@@ -1029,7 +1171,7 @@
       if (i >= 0) lista[i] = item; else lista.unshift(item);
       gravarLS(CHAVE_V, lista.slice(0, 30));
       $('v-nome').value = ''; montarVisoes();
-      $('v-salvar').textContent = 'Salvo'; setTimeout(() => { $('v-salvar').textContent = 'Salvar'; }, 1200);
+      $('v-salvar').textContent = t('salvo'); setTimeout(() => { $('v-salvar').textContent = t('salvar'); }, 1200);
     };
     $('v-salvar').onclick = salvar;
     $('v-nome').onkeydown = e => { if (e.key === 'Enter') salvar(); };
@@ -1038,11 +1180,11 @@
     $('v-limpar').onclick = () => {
       const b = $('v-limpar');
       if (!b.classList.contains('confirma')) {
-        b.classList.add('confirma'); b.textContent = 'Confirmar limpeza';
-        tConf = setTimeout(() => { b.classList.remove('confirma'); b.textContent = 'Limpar tudo'; }, 3000);
+        b.classList.add('confirma'); b.textContent = t('confirmaLimpar');
+        tConf = setTimeout(() => { b.classList.remove('confirma'); b.textContent = t('limparTudo'); }, 3000);
         return;
       }
-      clearTimeout(tConf); b.classList.remove('confirma'); b.textContent = 'Limpar tudo';
+      clearTimeout(tConf); b.classList.remove('confirma'); b.textContent = t('limparTudo');
       gravarLS(CHAVE, null);
       padraoSite().then(aplicarEstado);
     };
@@ -1100,7 +1242,7 @@
 
   biblioteca
     .then(() => fetch('dados/catalogo.json').then(r => r.ok ? r.json() : Promise.reject(new Error('catálogo'))))
-    .then(j => { CAT = j.series; FONTES = j.fontes; })
+    .then(j => { CAT = j.series; FONTES = j.fontes; traduzirCatalogo(); })
     .then(() => carregar('ibovespa'))
     .then(() => {
       $('grafico').textContent = '';
@@ -1111,5 +1253,5 @@
       const padrao = padraoSite();   // sempre carrega: também aparece fixo na lista de visões salvas
       return (salvo ? Promise.resolve(salvo) : padrao).then(aplicarEstado).then(() => { pronto = true; });
     })
-    .catch(err => { $('grafico').innerHTML = '<div class="aviso">Não foi possível carregar os dados (' + esc(err) + ').</div>'; });
+    .catch(err => { $('grafico').innerHTML = '<div class="aviso">' + t('erro') + ' (' + esc(err) + ').</div>'; });
 })();

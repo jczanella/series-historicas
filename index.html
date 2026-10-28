@@ -60,7 +60,7 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 1440px; margin: 0 auto; display: grid; gap: 14px; }
+.wrap { max-width: 1440px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
@@ -80,10 +80,20 @@ h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
 .seg button:disabled { opacity: .35; cursor: not-allowed; background: transparent; }
 header .seg { background: var(--panel); flex-wrap: nowrap; }
 header .seg button { font-size: 12px; padding: 0 8px; white-space: nowrap; }
+.topo-dir { display: flex; align-items: center; gap: 10px; }
+/* idioma: bandeiras pequenas e discretas; a escolhida fica nítida */
+.idiomas { display: inline-flex; gap: 2px; }
+.idiomas button {
+  width: 28px; height: 22px; padding: 0; border: 1px solid transparent; border-radius: 5px; background: transparent;
+  cursor: pointer; display: grid; place-items: center; opacity: .4; filter: saturate(.6); transition: opacity .15s, filter .15s;
+}
+.idiomas button:hover { opacity: .85; filter: none; }
+.idiomas button[aria-pressed="true"] { opacity: 1; filter: none; border-color: var(--line); background: var(--panel); }
+.idiomas svg { width: 20px; height: 14px; border-radius: 2px; display: block; box-shadow: 0 0 0 .5px rgba(0, 0, 0, .25); }
 
 /* Estrutura */
 .app { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; align-items: start; }
-main { display: grid; gap: 12px; min-width: 0; }
+main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
 
 /* Menu lateral */
 aside {
@@ -277,7 +287,7 @@ details.sub > summary:hover { color: var(--fg); }
 .ir { display: none; }
 /* celular e tablet: gráfico primeiro, menu depois (com atalhos entre os dois) */
 @media (max-width: 900px) {
-  .app { display: flex; flex-direction: column; }
+  .app { display: flex; flex-direction: column; align-items: stretch; }
   main { order: 1; }
   aside { order: 2; position: static; max-height: none; }
   .ir {
@@ -312,88 +322,94 @@ details.sub > summary:hover { color: var(--fg); }
 <div class="wrap">
   <header>
     <div>
-      <h1>Séries Históricas</h1>
+      <h1 data-t="titulo">Séries Históricas</h1>
       <div class="fonte" id="fonte">—</div>
     </div>
-    <div class="seg" id="seg-tema" aria-label="Tema">
-      <button id="t-claro" data-v="light" aria-pressed="false" title="Tema claro">☀ Claro</button>
-      <button id="t-escuro" data-v="dark" aria-pressed="false" title="Tema escuro">☾ Escuro</button>
+    <div class="topo-dir">
+      <div class="idiomas" id="seg-idioma" aria-label="Idioma" data-t-aria="idioma">
+        <button data-v="pt" aria-pressed="true" title="Português" aria-label="Português"><svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#009c3b"/><path d="M10 1.7 18.3 7 10 12.3 1.7 7z" fill="#ffdf00"/><circle cx="10" cy="7" r="3.5" fill="#002776"/><path d="M6.6 6.4c2.3-.5 4.8.1 6.75 1.4" stroke="#fff" stroke-width=".6" fill="none"/></svg></button>
+        <button data-v="en" aria-pressed="false" title="English" aria-label="English"><svg viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><clipPath id="uk-t"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-t)" stroke="#c8102e" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/></svg></button>
+      </div>
+      <div class="seg" id="seg-tema" aria-label="Tema" data-t-aria="tema">
+        <button id="t-claro" data-v="light" aria-pressed="false" title="Tema claro" data-t="claro" data-t-title="temaClaro">☀ Claro</button>
+        <button id="t-escuro" data-v="dark" aria-pressed="false" title="Tema escuro" data-t="escuro" data-t-title="temaEscuro">☾ Escuro</button>
+      </div>
     </div>
   </header>
 
   <div class="app">
-    <aside aria-label="Filtros e séries" id="menu">
-      <button class="ir" id="ir-grafico">↑ Voltar ao gráfico</button>
+    <aside aria-label="Filtros e séries" data-t-aria="menu" id="menu">
+      <button class="ir" id="ir-grafico" data-t="voltarGrafico">↑ Voltar ao gráfico</button>
       <details class="sec" open>
-        <summary>Visões salvas</summary>
+        <summary data-t="visoes">Visões salvas</summary>
         <div class="sec-corpo">
           <div class="salvar">
-            <input id="v-nome" type="text" maxlength="40" placeholder="Nome da visão" aria-label="Nome da visão">
-            <button id="v-salvar" class="btn">Salvar</button>
+            <input id="v-nome" type="text" maxlength="40" placeholder="Nome da visão" aria-label="Nome da visão" data-t-ph="nomeVisao" data-t-aria="nomeVisao">
+            <button id="v-salvar" class="btn" data-t="salvar">Salvar</button>
           </div>
           <div class="visoes" id="visoes"></div>
           <div class="v-rodape">
-            <span>Fica salvo neste navegador</span>
-            <button id="v-limpar" class="btn-sec" title="Volta à visão padrão do site (as visões com nome continuam)">Limpar tudo</button>
+            <span data-t="ficaSalvo">Fica salvo neste navegador</span>
+            <button id="v-limpar" class="btn-sec" title="Volta à visão padrão do site (as visões com nome continuam)" data-t="limparTudo" data-t-title="limparTit">Limpar tudo</button>
           </div>
         </div>
       </details>
 
       <details class="sec" open>
-        <summary>Período</summary>
+        <summary data-t="periodo">Período</summary>
         <div class="sec-corpo">
-          <div class="seg" id="seg-per" aria-label="Período">
+          <div class="seg" id="seg-per" aria-label="Período" data-t-aria="periodo">
             <button id="p-1m" data-v="1m">1M</button>
             <button id="p-6m" data-v="6m">6M</button>
-            <button id="p-ano" data-v="ano" title="Desde o início do ano">Ano</button>
-            <button id="p-1a" data-v="1a">1A</button>
-            <button id="p-5a" data-v="5a">5A</button>
-            <button id="p-10a" data-v="10a">10A</button>
-            <button id="p-max" data-v="max">Máx</button>
+            <button id="p-ano" data-v="ano" title="Desde o início do ano" data-t="ano" data-t-title="anoTit">Ano</button>
+            <button id="p-1a" data-v="1a" data-t="p1a">1A</button>
+            <button id="p-5a" data-v="5a" data-t="p5a">5A</button>
+            <button id="p-10a" data-v="10a" data-t="p10a">10A</button>
+            <button id="p-max" data-v="max" data-t="max">Máx</button>
           </div>
           <div class="datas">
-            <input type="date" id="d-ini" aria-label="Data inicial">
+            <input type="date" id="d-ini" aria-label="Data inicial" data-t-aria="dataIni">
             <span>→</span>
-            <input type="date" id="d-fim" aria-label="Data final">
+            <input type="date" id="d-fim" aria-label="Data final" data-t-aria="dataFim">
           </div>
-          <div class="seg" id="seg-freq" aria-label="Frequência">
-            <button id="f-d" data-v="d" aria-pressed="true">Diário</button>
-            <button id="f-m" data-v="m" aria-pressed="false">Mensal</button>
+          <div class="seg" id="seg-freq" aria-label="Frequência" data-t-aria="freq">
+            <button id="f-d" data-v="d" aria-pressed="true" data-t="diario">Diário</button>
+            <button id="f-m" data-v="m" aria-pressed="false" data-t="mensal">Mensal</button>
           </div>
         </div>
       </details>
 
       <details class="sec" open>
-        <summary>Exibição</summary>
+        <summary data-t="exibicao">Exibição</summary>
         <div class="sec-corpo">
-          <div class="linha"><span class="r">Unidade</span>
+          <div class="linha"><span class="r" data-t="unidade">Unidade</span>
             <div class="seg" id="seg-modo">
-              <button id="m-val" data-v="val" aria-pressed="true" title="Valor original da série">Valor</button>
-              <button id="m-pct" data-v="pct" aria-pressed="false" title="Variação desde o início do período">%</button>
+              <button id="m-val" data-v="val" aria-pressed="true" title="Valor original da série" data-t="valor" data-t-title="valorTit">Valor</button>
+              <button id="m-pct" data-v="pct" aria-pressed="false" title="Variação desde o início do período" data-t-title="pctTit">%</button>
             </div>
           </div>
-          <div class="linha"><span class="r">Escala</span>
+          <div class="linha"><span class="r" data-t="escala">Escala</span>
             <div class="seg" id="seg-escala">
               <button id="e-lin" data-v="lin" aria-pressed="true">Linear</button>
-              <button id="e-log" data-v="log" aria-pressed="false" title="Escala logarítmica: mesma distância = mesma variação %">Log</button>
+              <button id="e-log" data-v="log" aria-pressed="false" title="Escala logarítmica: mesma distância = mesma variação %" data-t-title="logTit">Log</button>
             </div>
           </div>
-          <div class="linha"><span class="r">Eixo Y</span>
+          <div class="linha"><span class="r" data-t="eixoY">Eixo Y</span>
             <div class="seg" id="seg-eixo">
-              <button id="y-comum" data-v="comum" aria-pressed="false" title="Uma escala para o gráfico todo">Comum</button>
-              <button id="y-serie" data-v="escala" aria-pressed="true" title="Um eixo por unidade (pontos, %, R$…), cada um ajustável na barra ao lado do gráfico">Por unidade</button>
+              <button id="y-comum" data-v="comum" aria-pressed="false" title="Uma escala para o gráfico todo" data-t="comum" data-t-title="comumTit">Comum</button>
+              <button id="y-serie" data-v="escala" aria-pressed="true" title="Um eixo por unidade (pontos, %, R$…), cada um ajustável na barra ao lado do gráfico" data-t="porUnid" data-t-title="porUnidTit">Por unidade</button>
             </div>
-            <button class="mini" id="y-reset" title="Voltar as escalas ao padrão" aria-label="Voltar as escalas ao padrão">↺</button>
+            <button class="mini" id="y-reset" title="Voltar as escalas ao padrão" aria-label="Voltar as escalas ao padrão" data-t-title="resetEsc" data-t-aria="resetEsc">↺</button>
           </div>
         </div>
       </details>
 
       <details class="sec" open>
-        <summary>Contexto</summary>
+        <summary data-t="contexto">Contexto</summary>
         <div class="sec-corpo">
-          <button class="chip-gov" id="chip-gov" aria-pressed="false" title="Faixas dos mandatos presidenciais">
+          <button class="chip-gov" id="chip-gov" aria-pressed="false" title="Faixas dos mandatos presidenciais" data-t-title="govTit">
             <span class="kg"><i style="background:var(--g-fhc)"></i><i style="background:var(--g-lula)"></i><i style="background:var(--g-dilma)"></i><i style="background:var(--g-bolsonaro)"></i></span>
-            Governos<span class="sw2"></span>
+            <span data-t="governos">Governos</span><span class="sw2"></span>
           </button>
         </div>
       </details>
@@ -402,27 +418,27 @@ details.sub > summary:hover { color: var(--fg); }
     </aside>
 
     <main id="principal">
-      <button class="ir" id="ir-filtros">☰ Séries, período e filtros</button>
-      <div class="grupos" id="grupos" aria-label="Gráficos: arraste uma série para juntar ou separar"></div>
+      <button class="ir" id="ir-filtros" data-t="irFiltros">☰ Séries, período e filtros</button>
+      <div class="grupos" id="grupos" aria-label="Gráficos: arraste uma série para juntar ou separar" data-t-aria="gruposAria"></div>
 
       <div class="stats" id="stats">
         <div class="stat"><div class="r"><span class="k" id="st-k"></span><span id="st-nome">Variação</span></div><div class="v" id="st-var">—</div><div class="s" id="st-var-s">&nbsp;</div></div>
-        <div class="stat"><div class="r">Início</div><div class="v" id="st-ini">—</div><div class="s" id="st-ini-s">&nbsp;</div></div>
-        <div class="stat"><div class="r">Fim</div><div class="v" id="st-fim">—</div><div class="s" id="st-fim-s">&nbsp;</div></div>
-        <div class="stat"><div class="r">Máxima</div><div class="v" id="st-max">—</div><div class="s" id="st-max-s">&nbsp;</div></div>
-        <div class="stat"><div class="r">Mínima</div><div class="v" id="st-min">—</div><div class="s" id="st-min-s">&nbsp;</div></div>
+        <div class="stat"><div class="r" data-t="inicio">Início</div><div class="v" id="st-ini">—</div><div class="s" id="st-ini-s">&nbsp;</div></div>
+        <div class="stat"><div class="r" data-t="fim">Fim</div><div class="v" id="st-fim">—</div><div class="s" id="st-fim-s">&nbsp;</div></div>
+        <div class="stat"><div class="r" data-t="maxima">Máxima</div><div class="v" id="st-max">—</div><div class="s" id="st-max-s">&nbsp;</div></div>
+        <div class="stat"><div class="r" data-t="minima">Mínima</div><div class="v" id="st-min">—</div><div class="s" id="st-min-s">&nbsp;</div></div>
       </div>
 
       <div class="card">
-        <div class="govs" id="govs" aria-label="Governos: clique para medir o mandato" hidden></div>
-        <div id="grafico"><div class="aviso">Carregando…</div></div>
+        <div class="govs" id="govs" aria-label="Governos: clique para medir o mandato" data-t-aria="govsAria" hidden></div>
+        <div id="grafico"><div class="aviso" data-t="carregando">Carregando…</div></div>
         <div class="rodape" id="rodape"></div>
       </div>
     </main>
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=aeab3d4048"></script>
+<script src="app.js?v=99d68d22c3"></script>
 <script data-goatcounter="https://jczanella.goatcounter.com/count" async src="https://gc.zgo.at/count.v5.js" crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>
 </body>
 </html>
