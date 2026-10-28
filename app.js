@@ -13,7 +13,8 @@
     { nome: 'FHC', ini: '1995-01-01', fim: '2002-12-31', cor: '--g-fhc' },
     { nome: 'Lula 1', ini: '2003-01-01', fim: '2006-12-31', cor: '--g-lula' },
     { nome: 'Lula 2', ini: '2007-01-01', fim: '2010-12-31', cor: '--g-lula', forte: true },
-    { nome: 'Dilma', ini: '2011-01-01', fim: '2016-05-11', cor: '--g-dilma' },
+    { nome: 'Dilma 1', ini: '2011-01-01', fim: '2014-12-31', cor: '--g-dilma' },
+    { nome: 'Dilma 2', ini: '2015-01-01', fim: '2016-05-11', cor: '--g-dilma', forte: true },
     { nome: 'Temer', ini: '2016-05-12', fim: '2018-12-31', cor: '--g-temer' },
     { nome: 'Bolsonaro', ini: '2019-01-01', fim: '2022-12-31', cor: '--g-bolsonaro' },
     // Lula 3 termina em 31/12/2026; o próximo mandato entra aqui quando começar (jan/2027)
