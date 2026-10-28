@@ -81,6 +81,13 @@
      ]
     },
     {
+     "nome": "Juros futuros e expectativas",
+     "series": [
+      "selic_focus",
+      "ipca_focus"
+     ]
+    },
+    {
      "nome": "Atividade e emprego",
      "series": [
       "pib_us",
@@ -141,6 +148,21 @@
      "series": [
       "primario",
       "nominal"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "tesouro",
+   "nome": "Tesouro Nacional",
+   "site": "tesourotransparente.gov.br · Tesouro Direto",
+   "temas": [
+    {
+     "nome": "Juros futuros (prefixados)",
+     "series": [
+      "juro_pre_1a",
+      "juro_pre_2a",
+      "juro_pre_5a"
      ]
     }
    ]
@@ -507,6 +529,26 @@
    "traco": false,
    "degrau": false
   },
+  "selic_focus": {
+   "nome": "Selic esperada p/ fim do ano seguinte (Focus)",
+   "tipo": "taxa",
+   "unid": "% a.a.",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — pesquisa Focus (mediana)",
+   "cor": "--c-cinza",
+   "traco": false,
+   "degrau": false
+  },
+  "ipca_focus": {
+   "nome": "IPCA esperado 12 meses à frente (Focus)",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — pesquisa Focus (mediana, suavizada)",
+   "cor": "--c-vermelho",
+   "traco": true,
+   "degrau": false
+  },
   "pib_us": {
    "nome": "PIB em US$ (12 meses)",
    "tipo": "nivel",
@@ -518,7 +560,7 @@
    "degrau": false
   },
   "ibcbr": {
-   "nome": "IBC-Br",
+   "nome": "Índice de atividade econômica (IBC-Br)",
    "tipo": "nivel",
    "unid": "índice",
    "freq": "mensal",
@@ -785,6 +827,36 @@
    "origem": "Banco Central do Brasil — SGS 5727 (sinal invertido: + = superávit)",
    "cor": "--c-vermelho",
    "traco": true,
+   "degrau": false
+  },
+  "juro_pre_1a": {
+   "nome": "Juro prefixado 1 ano",
+   "tipo": "taxa",
+   "unid": "% a.a.",
+   "freq": "diária",
+   "origem": "Tesouro Nacional — Tesouro Direto (taxa de compra do Tesouro Prefixado, interpolada para 365 dias)",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "juro_pre_2a": {
+   "nome": "Juro prefixado 2 anos",
+   "tipo": "taxa",
+   "unid": "% a.a.",
+   "freq": "diária",
+   "origem": "Tesouro Nacional — Tesouro Direto (taxa de compra do Tesouro Prefixado, interpolada para 730 dias)",
+   "cor": "--c-violeta",
+   "traco": false,
+   "degrau": false
+  },
+  "juro_pre_5a": {
+   "nome": "Juro prefixado 5 anos",
+   "tipo": "taxa",
+   "unid": "% a.a.",
+   "freq": "diária",
+   "origem": "Tesouro Nacional — Tesouro Direto (taxa de compra do Tesouro Prefixado, interpolada para 1.826 dias)",
+   "cor": "--c-magenta",
+   "traco": false,
    "degrau": false
   }
  }

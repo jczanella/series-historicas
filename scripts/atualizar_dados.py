@@ -167,11 +167,86 @@ def sidra(tabela, variavel, setor):
 VS_ANTERIOR, VS_ANO_ANT, ACUM_4T, ACUM_ANO = 6564, 6561, 6562, 6563
 
 
+# ---------- Tesouro Nacional (Tesouro Direto, dados abertos) ----------
+TD_CSV = ("https://www.tesourotransparente.gov.br/ckan/dataset/df56aa42-484a-4a59-8184-7676580c81e3/"
+          "resource/796d2059-14e9-44e3-80c9-2d9e30b405c1/download/PrecoTaxaTesouroDireto.csv")
+
+
+@lru_cache(None)
+def _tesouro_prefixado():
+    """{data base: [(dias até o vencimento, taxa % a.a.)]} dos Tesouro Prefixado (LTN, sem cupom)."""
+    req = urllib.request.Request(TD_CSV, headers={"User-Agent": "Mozilla/5.0"})
+    for tentativa in range(5):
+        try:
+            texto = urllib.request.urlopen(req, timeout=180).read().decode("latin-1")
+            break
+        except Exception:
+            if tentativa == 4:
+                raise
+            time.sleep(5 + 5 * tentativa)
+    fmt, por_dia = "%d/%m/%Y", {}
+    for linha in texto.splitlines()[1:]:
+        c = linha.split(";")
+        if len(c) < 4 or c[0] != "Tesouro Prefixado" or not c[3]:
+            continue
+        taxa = float(c[3].replace(",", "."))
+        if taxa <= 0:
+            continue
+        base, venc = datetime.strptime(c[2], fmt).date(), datetime.strptime(c[1], fmt).date()
+        por_dia.setdefault(base, []).append(((venc - base).days, taxa))
+    return por_dia
+
+
+def juro_prefixado(dias):
+    """Taxa prefixada com prazo constante (ex.: 365 dias), interpolando linearmente entre os
+    dois vencimentos vizinhos; dias sem vencimentos dos dois lados ficam de fora."""
+    out = []
+    for base, pts in sorted(_tesouro_prefixado().items()):
+        pts.sort()
+        antes = [p for p in pts if p[0] <= dias]
+        depois = [p for p in pts if p[0] >= dias]
+        if not antes or not depois:
+            continue
+        (d0, t0), (d1, t1) = antes[-1], depois[0]
+        out.append((base, t0 if d1 == d0 else t0 + (t1 - t0) * (dias - d0) / (d1 - d0)))
+    return out
+
+
+# ---------- Banco Central — pesquisa Focus (expectativas de mercado) ----------
+OLINDA = "https://olinda.bcb.gov.br/olinda/servico/Expectativas/versao/v1/odata/"
+
+
+def focus(recurso, filtro, campos):
+    url = (OLINDA + recurso + "?$format=json&$top=100000&$select=" + campos
+           + "&$filter=" + urllib.request.quote(filtro))
+    return baixar(url)["value"]
+
+
+def focus_selic_ano_seguinte():
+    """Mediana da Selic esperada para o fim do ano seguinte, em cada data da pesquisa."""
+    pontos = {}
+    for r in focus("ExpectativasMercadoAnuais", "Indicador eq 'Selic' and baseCalculo eq 0", "Data,DataReferencia,Mediana"):
+        d = datetime.strptime(r["Data"], "%Y-%m-%d").date()
+        if r["Mediana"] is not None and int(r["DataReferencia"]) == d.year + 1:
+            pontos[d] = r["Mediana"]
+    return sorted(pontos.items())
+
+
+def focus_ipca_12m():
+    """Mediana do IPCA esperado para os próximos 12 meses (série suavizada)."""
+    pontos = {}
+    for r in focus("ExpectativasMercadoInflacao12Meses", "Indicador eq 'IPCA' and Suavizada eq 'S' and baseCalculo eq 0", "Data,Mediana"):
+        if r["Mediana"] is not None:
+            pontos[datetime.strptime(r["Data"], "%Y-%m-%d").date()] = r["Mediana"]
+    return sorted(pontos.items())
+
+
 # ---------- catálogo ----------
 FONTES = {
     "b3": {"nome": "B3", "site": "via Yahoo Finance"},
     "ibge": {"nome": "IBGE", "site": "sidra.ibge.gov.br · Contas Nacionais"},
     "bcb": {"nome": "Banco Central", "site": "bcb.gov.br"},
+    "tesouro": {"nome": "Tesouro Nacional", "site": "tesourotransparente.gov.br · Tesouro Direto"},
 }
 PALETA = ["--c-azul", "--c-laranja", "--c-aqua", "--c-amarelo", "--c-magenta", "--c-verde", "--c-violeta", "--c-vermelho"]
 CATALOGO = []   # ordem de inserção = ordem de importância no menu
@@ -230,9 +305,13 @@ serie("igpm_acum", "bcb", T, "IGP-M acumulado", "nivel", "índice", "mensal", B 
 serie("cdi_acum", "bcb", T, "CDI acumulado", "nivel", "índice", "diária", B + "12 (acumulado, 30/06/1994 = 100)", lambda: acumulado(sgs(12), BASE), cor="--c-aqua")
 serie("inpc_acum", "bcb", T, "INPC acumulado", "nivel", "índice", "mensal", B + "188 (acumulado, 30/06/1994 = 100)", lambda: acumulado(mensal(sgs(188)), BASE), cor="--c-violeta")
 
+T = "Juros futuros e expectativas"
+serie("selic_focus", "bcb", T, "Selic esperada p/ fim do ano seguinte (Focus)", "taxa", "% a.a.", "diária", "Banco Central do Brasil — pesquisa Focus (mediana)", focus_selic_ano_seguinte, cor="--c-cinza")
+serie("ipca_focus", "bcb", T, "IPCA esperado 12 meses à frente (Focus)", "taxa", "%", "diária", "Banco Central do Brasil — pesquisa Focus (mediana, suavizada)", focus_ipca_12m, cor="--c-vermelho", traco=True)
+
 T = "Atividade e emprego"
 serie("pib_us", "bcb", T, "PIB em US$ (12 meses)", "nivel", "US$ tri", "mensal", B + "4385 (PIB mensal estimado pelo BCB, soma de 12 meses)", lambda: escala(soma_movel(mensal(sgs(4385)), 12), 1 / 1e6), cor="--c-verde", traco=True)
-serie("ibcbr", "bcb", T, "IBC-Br", "nivel", "índice", "mensal", B + "24364 (com ajuste sazonal)", lambda: mensal(sgs(24364, date(2003, 1, 1))), cor="--c-laranja", traco=True)
+serie("ibcbr", "bcb", T, "Índice de atividade econômica (IBC-Br)", "nivel", "índice", "mensal", B + "24364 (com ajuste sazonal)", lambda: mensal(sgs(24364, date(2003, 1, 1))), cor="--c-laranja", traco=True)
 serie("desocupacao", "bcb", T, "Desemprego", "taxa", "%", "mensal", B + "24369 (IBGE, PNAD Contínua)", lambda: mensal(sgs(24369, date(2012, 3, 1))), cor="--c-violeta")
 
 T = "Crédito"
@@ -276,6 +355,14 @@ T = "Fiscal (+ superávit, − déficit)"
 # NFSP positiva = déficit; o sinal é invertido para superávit aparecer positivo
 serie("primario", "bcb", T, "Resultado primário", "taxa", "% PIB", "12 meses", B + "5793 (sinal invertido: + = superávit)", lambda: escala(mensal(sgs(5793)), -1), cor="--c-azul", traco=True)
 serie("nominal", "bcb", T, "Resultado nominal", "taxa", "% PIB", "12 meses", B + "5727 (sinal invertido: + = superávit)", lambda: escala(mensal(sgs(5727)), -1), cor="--c-vermelho", traco=True)
+
+
+# Tesouro Direto: equivalente oficial e aberto ao "DI futuro" (B3 não tem acesso aberto; swap DI×pré do BCB parou em 2019)
+T = "Juros futuros (prefixados)"
+TD = "Tesouro Nacional — Tesouro Direto (taxa de compra do Tesouro Prefixado, interpolada para {})"
+serie("juro_pre_1a", "tesouro", T, "Juro prefixado 1 ano", "taxa", "% a.a.", "diária", TD.format("365 dias"), lambda: juro_prefixado(365), cor="--c-azul")
+serie("juro_pre_2a", "tesouro", T, "Juro prefixado 2 anos", "taxa", "% a.a.", "diária", TD.format("730 dias"), lambda: juro_prefixado(730), cor="--c-violeta")
+serie("juro_pre_5a", "tesouro", T, "Juro prefixado 5 anos", "taxa", "% a.a.", "diária", TD.format("1.826 dias"), lambda: juro_prefixado(1826), cor="--c-magenta")
 
 
 def gravar_catalogo():
