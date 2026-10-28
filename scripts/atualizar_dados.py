@@ -191,9 +191,10 @@ serie("ibovespa", "b3", None, "Ibovespa", "nivel", "pts", "diária", "Yahoo Fina
 
 # IBGE — PIB
 T = "PIB — principais"
-serie("pib_4t", "ibge", T, "PIB acumulado 4 trimestres", "taxa", "%", "trimestral", I + "5932 (var. % acumulada em 4 trimestres)", lambda: sidra(5932, ACUM_4T, PIB), cor="--c-laranja")
-serie("pib", "ibge", T, "PIB vs mesmo trimestre do ano anterior", "taxa", "%", "trimestral", I + "5932", lambda: sidra(5932, VS_ANO_ANT, PIB), cor="--c-laranja", traco=True)
-serie("pib_tt", "ibge", T, "PIB vs trimestre anterior (dessaz.)", "taxa", "%", "trimestral", I + "5932", lambda: sidra(5932, VS_ANTERIOR, PIB), cor="--c-vermelho")
+# ordem da divulgação do IBGE e da imprensa: manchete = trimestre vs anterior; depois 12 meses e vs mesmo tri do ano anterior
+serie("pib_tt", "ibge", T, "PIB no trimestre (vs anterior, dessaz.)", "taxa", "%", "trimestral", I + "5932 (var. % vs trimestre anterior, com ajuste sazonal)", lambda: sidra(5932, VS_ANTERIOR, PIB), cor="--c-vermelho")
+serie("pib_4t", "ibge", T, "PIB em 12 meses (4 trimestres)", "taxa", "%", "trimestral", I + "5932 (var. % acumulada em 4 trimestres)", lambda: sidra(5932, ACUM_4T, PIB), cor="--c-laranja")
+serie("pib", "ibge", T, "PIB vs mesmo trimestre do ano anterior", "taxa", "%", "trimestral", I + "5932 (var. % vs mesmo trimestre do ano anterior)", lambda: sidra(5932, VS_ANO_ANT, PIB), cor="--c-laranja", traco=True)
 serie("pib_ano", "ibge", T, "PIB acumulado no ano", "taxa", "%", "trimestral", I + "5932", lambda: sidra(5932, ACUM_ANO, PIB), cor="--c-amarelo")
 serie("pib_anual", "ibge", T, "PIB anual (crescimento)", "taxa", "%", "anual", I + "5932 (acumulado em 4 trimestres no 4º tri)", lambda: so_dezembro(sidra(5932, ACUM_4T, PIB)), cor="--c-violeta")
 serie("pib_valor", "ibge", T, "PIB em R$ (12 meses)", "nivel", "R$ tri", "trimestral", I + "1846 (preços correntes, soma de 4 trimestres)", lambda: escala(soma_movel(sidra(1846, 585, PIB), 4), 1 / 1e6), cor="--c-verde")

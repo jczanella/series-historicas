@@ -21,9 +21,9 @@
     {
      "nome": "PIB — principais",
      "series": [
+      "pib_tt",
       "pib_4t",
       "pib",
-      "pib_tt",
       "pib_ano",
       "pib_anual",
       "pib_valor",
@@ -157,8 +157,18 @@
    "traco": false,
    "degrau": false
   },
+  "pib_tt": {
+   "nome": "PIB no trimestre (vs anterior, dessaz.)",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % vs trimestre anterior, com ajuste sazonal)",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
   "pib_4t": {
-   "nome": "PIB acumulado 4 trimestres",
+   "nome": "PIB em 12 meses (4 trimestres)",
    "tipo": "taxa",
    "unid": "%",
    "freq": "trimestral",
@@ -172,19 +182,9 @@
    "tipo": "taxa",
    "unid": "%",
    "freq": "trimestral",
-   "origem": "IBGE — SIDRA, tabela 5932",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % vs mesmo trimestre do ano anterior)",
    "cor": "--c-laranja",
    "traco": true,
-   "degrau": false
-  },
-  "pib_tt": {
-   "nome": "PIB vs trimestre anterior (dessaz.)",
-   "tipo": "taxa",
-   "unid": "%",
-   "freq": "trimestral",
-   "origem": "IBGE — SIDRA, tabela 5932",
-   "cor": "--c-vermelho",
-   "traco": false,
    "degrau": false
   },
   "pib_ano": {

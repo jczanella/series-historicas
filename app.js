@@ -326,21 +326,26 @@
   const medir = (() => { const cv = document.createElement('canvas').getContext('2d'); return (t, f) => { cv.font = f; return cv.measureText(t).width; }; })();
   function titulos(c, L) {
     const f = '500 12px IBM Plex Sans, system-ui, sans-serif', fn = '600 11px IBM Plex Mono, monospace';
+    const fs = '400 10px IBM Plex Sans, system-ui, sans-serif';
     return L.map((l, i) => {
       const filhos = [];
       let x = 8;
       if (st.grupos.length > 1) {
-        filhos.push({ type: 'text', style: { text: String(i + 1), x, y: 12, verticalAlign: 'middle', fill: c.muted, font: fn } });
+        filhos.push({ type: 'text', style: { text: String(i + 1), x, y: 18, verticalAlign: 'middle', fill: c.muted, font: fn } });
         x += medir(String(i + 1), fn) + 10;
       }
       for (const id of st.grupos[i]) {
-        filhos.push({ type: 'line', shape: { x1: x, y1: 12, x2: x + 14, y2: 12 },
+        filhos.push({ type: 'line', shape: { x1: x, y1: 11, x2: x + 14, y2: 11 },
           style: { stroke: c.cor(CAT[id].cor), lineWidth: 3, lineCap: 'round', lineDash: CAT[id].traco ? [4, 3] : null } });
         x += 20;
-        filhos.push({ type: 'text', style: { text: CAT[id].nome, x, y: 12, verticalAlign: 'middle', fill: c.fg, font: f } });
-        x += medir(CAT[id].nome, f) + 14;
+        // abaixo do nome, pequeno: fonte (sem o detalhe entre parênteses) e data da atualização
+        const fonte = (CAT[id].origem || '').split(' (')[0].replace(/,? soma de 12 meses$/, '');
+        const sub = fonte + ' · atualizado em ' + fmtD(Date.parse(series[id].meta.atualizado));
+        filhos.push({ type: 'text', style: { text: CAT[id].nome, x, y: 11, verticalAlign: 'middle', fill: c.fg, font: f } });
+        filhos.push({ type: 'text', style: { text: sub, x, y: 26, verticalAlign: 'middle', fill: c.muted, font: fs } });
+        x += Math.max(medir(CAT[id].nome, f), medir(sub, fs)) + 16;
       }
-      filhos.unshift({ type: 'rect', shape: { x: 0, y: 0, width: x - 6, height: 24, r: 6 },
+      filhos.unshift({ type: 'rect', shape: { x: 0, y: 0, width: x - 6, height: 36, r: 6 },
         style: { fill: hexA(c.panel, .88), stroke: c.line, lineWidth: 1 } });
       return { type: 'group', left: MARG.esq + 6, top: l.top + 6, z: 10, silent: true, children: filhos };
     });
