@@ -23,6 +23,56 @@
   ].map(g => ({ ...g, t0: Date.parse(g.ini), t1: g.fim ? Date.parse(g.fim) : Infinity }));
   const govEm = ts => GOVERNOS.find(g => ts >= g.t0 && ts <= g.t1);
 
+  // Eventos mundiais que afetaram a economia brasileira (camada "Eventos"): data de início, bandeira, categoria, [título, detalhe]
+  // Bandeira = país que iniciou (agressor nas guerras); 'virus' para pandemias; 'alerta' quando não há país (grupo terrorista)
+  const BANDEIRAS = {   // [viewBox quadrado = recorte que aparece na bolinha, desenho]
+    eua: ['2 0 10 10', '<rect width="19" height="10" fill="#b22234"/><path d="M0 1.15h19M0 2.69h19M0 4.23h19M0 5.77h19M0 7.31h19M0 8.85h19" stroke="#fff" stroke-width=".77"/><rect width="7.6" height="5.38" fill="#3c3b6e"/><g fill="#fff"><circle cx="3.6" cy="1.3" r=".35"/><circle cx="5.4" cy="1.3" r=".35"/><circle cx="4.5" cy="2.7" r=".35"/><circle cx="6.3" cy="2.7" r=".35"/><circle cx="3.6" cy="4.1" r=".35"/><circle cx="5.4" cy="4.1" r=".35"/></g>'],
+    russia: ['1.5 0 6 6', '<rect width="9" height="2" fill="#fff"/><rect y="2" width="9" height="2" fill="#0039a6"/><rect y="4" width="9" height="2" fill="#d52b1e"/>'],
+    mexico: ['4.5 0 12 12', '<rect width="7" height="12" fill="#006847"/><rect x="7" width="7" height="12" fill="#fff"/><rect x="14" width="7" height="12" fill="#ce1126"/><circle cx="10.5" cy="6" r="1.7" fill="#8c5a2b"/>'],
+    tailandia: ['1.5 0 6 6', '<rect width="9" height="6" fill="#a51931"/><rect y="1" width="9" height="4" fill="#f4f5f8"/><rect y="2" width="9" height="2" fill="#2d2a4a"/>'],
+    argentina: ['1.5 0 6 6', '<rect width="9" height="6" fill="#74acdf"/><rect y="2" width="9" height="2" fill="#fff"/><circle cx="4.5" cy="3" r=".75" fill="#f6b40e"/>'],
+    grecia: ['0 0 18 18', '<rect width="27" height="18" fill="#0d5eaf"/><path d="M0 3h27M0 7h27M0 11h27M0 15h27" stroke="#fff" stroke-width="2"/><rect width="10" height="10" fill="#0d5eaf"/><path d="M5 0v10M0 5h10" stroke="#fff" stroke-width="2"/>'],
+    china: ['0 0 12 12', '<rect width="30" height="20" fill="#de2910"/><polygon points="5,2 6.76,7.43 2.15,4.07 7.85,4.07 3.24,7.43" fill="#ffde00"/><g fill="#ffde00"><circle cx="10" cy="2" r=".7"/><circle cx="11.5" cy="4" r=".7"/><circle cx="11.5" cy="6.8" r=".7"/><circle cx="10" cy="8.8" r=".7"/></g>'],
+    reino_unido: ['15 0 30 30', '<path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-t)" stroke="#c8102e" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>'],
+    israel: ['3 0 16 16', '<rect width="22" height="16" fill="#fff"/><rect y="1.5" width="22" height="2.4" fill="#0038b8"/><rect y="12.1" width="22" height="2.4" fill="#0038b8"/><path d="M11 5.2 13.4 9.4H8.6zM11 10.8 13.4 6.6H8.6z" fill="none" stroke="#0038b8" stroke-width=".8"/>'],
+    iraque: ['1.5 0 6 6', '<rect width="9" height="2" fill="#ce1126"/><rect y="2" width="9" height="2" fill="#fff"/><rect y="4" width="9" height="2" fill="#000"/><rect x="3.2" y="2.75" width="2.6" height=".5" fill="#007a3d"/>'],
+    alerta: ['0 0 20 20', '<rect width="20" height="20" fill="#2b2b2b"/><path d="M10 4.5v7" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="10" cy="15" r="1.5" fill="#fff"/>'],
+    virus: ['0 0 20 20', '<g stroke="#d6336c" stroke-width="1.4" stroke-linecap="round"><path d="M10 2.4v3M10 14.6v3M2.4 10h3M14.6 10h3M4.6 4.6l2.2 2.2M13.2 13.2l2.2 2.2M15.4 4.6l-2.2 2.2M6.8 13.2l-2.2 2.2"/></g><g fill="#d6336c"><circle cx="10" cy="2.2" r="1.4"/><circle cx="10" cy="17.8" r="1.4"/><circle cx="2.2" cy="10" r="1.4"/><circle cx="17.8" cy="10" r="1.4"/><circle cx="4.5" cy="4.5" r="1.4"/><circle cx="15.5" cy="15.5" r="1.4"/><circle cx="15.5" cy="4.5" r="1.4"/><circle cx="4.5" cy="15.5" r="1.4"/></g><circle cx="10" cy="10" r="5.2" fill="#d6336c"/><circle cx="8.3" cy="8.6" r="1.1" fill="#fff" opacity=".55"/><circle cx="11.9" cy="11.4" r=".8" fill="#fff" opacity=".55"/>'],
+  };
+  const EVENTOS = [
+    { d: '1990-08-02', b: 'iraque', c: 'guerra', pt: ['Iraque invade o Kuwait', 'Petróleo dispara; leva à Guerra do Golfo (1991)'], en: ['Iraq invades Kuwait', 'Oil prices spike; leads to the Gulf War (1991)'] },
+    { d: '1994-12-20', b: 'mexico', c: 'crise', pt: ['Crise do México (Efeito Tequila)', 'Desvalorização do peso; fuga de capital dos emergentes e alta dos juros no Brasil'], en: ['Mexican crisis (Tequila effect)', 'Peso devaluation; capital flight from emerging markets and higher rates in Brazil'] },
+    { d: '1997-07-02', b: 'tailandia', c: 'crise', pt: ['Crise asiática', 'Tailândia deixa o baht flutuar; contágio na Ásia e nos emergentes'], en: ['Asian financial crisis', 'Thailand floats the baht; contagion across Asia and emerging markets'] },
+    { d: '1998-08-17', b: 'russia', c: 'crise', pt: ['Moratória da Rússia', 'Calote da dívida; a fuga de capital leva à desvalorização do real (jan/1999)'], en: ['Russian default', 'Debt default; capital flight leads to the real\'s devaluation (Jan 1999)'] },
+    { d: '2000-03-10', b: 'eua', c: 'crise', pt: ['Estouro da bolha da internet', 'Nasdaq atinge o pico e despenca nos anos seguintes'], en: ['Dot-com bubble bursts', 'Nasdaq peaks and plunges over the following years'] },
+    { d: '2001-09-11', b: 'alerta', c: 'terror', pt: ['Atentados de 11 de setembro', 'Ataques da Al-Qaeda aos EUA; bolsas americanas fechadas por 4 dias'], en: ['September 11 attacks', 'Al-Qaeda attacks on the US; US stock markets closed for 4 days'] },
+    { d: '2001-10-07', b: 'eua', c: 'guerra', pt: ['EUA invadem o Afeganistão', 'Início da guerra contra o Talibã após o 11 de setembro'], en: ['US invades Afghanistan', 'War against the Taliban begins after 9/11'] },
+    { d: '2001-12-11', b: 'china', c: 'outro', pt: ['China entra na OMC', 'Começa o superciclo das commodities, que puxou as exportações brasileiras'], en: ['China joins the WTO', 'Start of the commodity supercycle that boosted Brazilian exports'] },
+    { d: '2001-12-23', b: 'argentina', c: 'crise', pt: ['Calote da Argentina', 'Maior moratória da história até então, depois do corralito; atinge o principal parceiro do Mercosul'], en: ['Argentine default', 'Largest sovereign default to date, after the corralito; hits Brazil\'s main Mercosur partner'] },
+    { d: '2003-03-20', b: 'eua', c: 'guerra', pt: ['EUA invadem o Iraque', 'Petróleo e incerteza global em alta'], en: ['US invades Iraq', 'Oil prices and global uncertainty rise'] },
+    { d: '2007-08-09', b: 'eua', c: 'crise', pt: ['Crise do subprime', 'Hipotecas de risco dos EUA travam o crédito; BNP Paribas congela fundos'], en: ['Subprime crisis', 'US subprime mortgages freeze credit markets; BNP Paribas freezes funds'] },
+    { d: '2008-09-15', b: 'eua', c: 'crise', pt: ['Quebra do Lehman Brothers', 'Banco americano quebra e espalha a crise financeira global de 2008'], en: ['Lehman Brothers collapse', 'US bank fails and spreads the 2008 global financial crisis'] },
+    { d: '2009-06-11', b: 'virus', c: 'saude', pt: ['Pandemia de gripe H1N1', 'OMS declara pandemia; impacto econômico pequeno'], en: ['H1N1 flu pandemic', 'WHO declares a pandemic; small economic impact'] },
+    { d: '2010-04-23', b: 'grecia', c: 'crise', pt: ['Crise da dívida europeia', 'Grécia pede socorro; contágio para Portugal, Irlanda, Espanha e Itália'], en: ['European debt crisis', 'Greece requests a bailout; contagion to Portugal, Ireland, Spain and Italy'] },
+    { d: '2011-08-05', b: 'eua', c: 'crise', pt: ['EUA perdem a nota AAA', 'S&P rebaixa a dívida americana; bolsas despencam'], en: ['US loses its AAA rating', 'S&P downgrades US debt; stock markets tumble'] },
+    { d: '2013-05-22', b: 'eua', c: 'crise', pt: ['Taper tantrum', 'Fed sinaliza o fim dos estímulos; dólar dispara nos emergentes'], en: ['Taper tantrum', 'Fed signals the end of stimulus; dollar surges in emerging markets'] },
+    { d: '2014-02-27', b: 'russia', c: 'guerra', pt: ['Rússia invade a Crimeia', 'Ocupação e anexação da península ucraniana; sanções à Rússia'], en: ['Russia invades Crimea', 'Occupation and annexation of the Ukrainian peninsula; sanctions on Russia'] },
+    { d: '2015-08-11', b: 'china', c: 'crise', pt: ['China desvaloriza o yuan', 'Depois do crash da bolsa chinesa; queda das commodities'], en: ['China devalues the yuan', 'After the Chinese stock market crash; commodity prices fall'] },
+    { d: '2016-06-23', b: 'reino_unido', c: 'outro', pt: ['Brexit', 'Reino Unido vota por sair da União Europeia'], en: ['Brexit vote', 'The UK votes to leave the European Union'] },
+    { d: '2018-07-06', b: 'eua', c: 'crise', pt: ['Guerra comercial EUA–China', 'Entram em vigor as primeiras tarifas americanas sobre produtos chineses'], en: ['US–China trade war', 'First US tariffs on Chinese goods take effect'] },
+    { d: '2020-03-11', b: 'virus', c: 'saude', pt: ['Covid-19', 'OMS declara pandemia; começam os lockdowns pelo mundo e no Brasil'], en: ['Covid-19', 'WHO declares a pandemic; lockdowns begin worldwide and in Brazil'] },
+    { d: '2022-02-24', b: 'russia', c: 'guerra', pt: ['Rússia invade a Ucrânia', 'Petróleo, gás, trigo e fertilizantes disparam; inflação global'], en: ['Russia invades Ukraine', 'Oil, gas, wheat and fertilizer prices surge; global inflation'] },
+    { d: '2023-03-10', b: 'eua', c: 'crise', pt: ['Quebra do Silicon Valley Bank', 'Maior falência bancária nos EUA desde 2008; o Credit Suisse cai em seguida'], en: ['Silicon Valley Bank collapse', 'Largest US bank failure since 2008; Credit Suisse falls soon after'] },
+    { d: '2023-10-07', b: 'alerta', c: 'guerra', pt: ['Ataque do Hamas a Israel', 'Início da guerra em Gaza; tensão no Oriente Médio'], en: ['Hamas attack on Israel', 'Start of the Gaza war; Middle East tensions'] },
+    { d: '2025-04-02', b: 'eua', c: 'crise', pt: ['Tarifaço de Trump', 'EUA anunciam tarifas sobre quase todos os países; bolsas despencam'], en: ['Trump\'s "Liberation Day" tariffs', 'The US announces tariffs on almost every country; markets tumble'] },
+    { d: '2025-06-13', b: 'israel', c: 'guerra', pt: ['Israel ataca o Irã', 'Início da guerra de 12 dias; petróleo sobe'], en: ['Israel attacks Iran', 'Start of the 12-day war; oil prices rise'] },
+    { d: '2025-06-22', b: 'eua', c: 'guerra', pt: ['EUA bombardeiam o Irã', 'Ataque às instalações nucleares iranianas'], en: ['US strikes Iran', 'Strikes on Iranian nuclear facilities'] },
+    { d: '2025-07-09', b: 'eua', c: 'crise', pt: ['Tarifa de 50% dos EUA sobre o Brasil', 'Trump anuncia a tarifa sobre produtos brasileiros (em vigor desde 06/08/2025)'], en: ['US 50% tariff on Brazil', 'Trump announces the tariff on Brazilian goods (in force since 6 Aug 2025)'] },
+    { d: '2026-01-03', b: 'eua', c: 'guerra', pt: ['EUA intervêm na Venezuela', 'Ataque a Caracas e captura de Maduro'], en: ['US intervenes in Venezuela', 'Strikes on Caracas and capture of Maduro'] },
+    { d: '2026-02-28', b: 'eua', c: 'guerra', pt: ['EUA e Israel atacam o Irã', 'Início da guerra do Irã; Ormuz é fechado em 04/03 e o petróleo passa de US$ 120'], en: ['US and Israel attack Iran', 'Start of the Iran war; Hormuz closed on 4 March and oil tops US$ 120'] },
+  ].map(e => ({ ...e, ts: Date.parse(e.d) }));
+  const iconeEv = b => `<svg viewBox="${BANDEIRAS[b][0]}" aria-hidden="true">${BANDEIRAS[b][1]}</svg>`;
+
   // ---------- idioma (português / inglês, lembrado neste navegador) ----------
   // [português, inglês]; elementos fixos da página usam data-t (texto), data-t-title, data-t-ph e data-t-aria
   const TXT = {
@@ -72,6 +122,9 @@
     padraoSite: ['Padrão do site', 'Site default'], abrirPadrao: ['Abrir a visão padrão do site', 'Open the site default view'],
     abrirVisao: ['Abrir esta visão', 'Open this view'], apagarVisao: ['Apagar a visão ', 'Delete view '],
     dias: [' dias', ' days'], aa: [' a.a.', ' p.a.'], pp: [' p.p.', ' pp'],
+    eventos: ['Eventos', 'Events'], evTit: ['Eventos mundiais que afetaram a economia brasileira', 'World events that affected the Brazilian economy'],
+    cat_guerra: ['Guerra', 'War'], cat_terror: ['Terrorismo', 'Terrorism'], cat_crise: ['Crise econômica', 'Economic crisis'],
+    cat_saude: ['Saúde', 'Health'], cat_outro: ['Economia mundial', 'World economy'],
   };
   // catálogo em inglês (o catálogo vem em português de dados/catalogo.json); série sem nome aqui aparece em português
   const EN = {
@@ -205,7 +258,7 @@
   $('seg-idioma').onclick = e => { const v = e.target.closest('button')?.dataset.v; if (v) trocarIdioma(v); };
 
   // grupos: cada grupo é um painel do gráfico, de cima para baixo
-  const st = { freq: 'd', modo: 'val', log: false, ini: null, fim: null, pinos: [], grupos: [['ibovespa']], ref: 'ibovespa', gov: false,
+  const st = { freq: 'd', modo: 'val', log: false, ini: null, fim: null, pinos: [], grupos: [['ibovespa']], ref: 'ibovespa', gov: false, ev: false,
     eixos: 'escala', yz: {}, solto: new Set(),
     escala: new Set() };   // painéis (1ª série) com a barra de escala aberta   // solto: séries com eixo próprio mesmo dividindo unidade   // yz: janela vertical [início%, fim%] de cada eixo no modo "por unidade"
   const series = {};      // id -> { d: [[ts, v]], m: [[ts, v]], meta }
@@ -559,6 +612,9 @@
     if (k > 0) return out;
     const I = info(st.grupos[gi]);
     const linhas = st.pinos.map(ts => ({ xAxis: ts, lineStyle: { color: c.pin, type: [4, 3], width: 1 }, label: { show: false } }));
+    // eventos: linha cinza vertical na data de início (a bolinha fica no eixo X, desenhada por desenharEventos)
+    if (st.ev) for (const e of EVENTOS) if (e.ts >= st.ini && e.ts <= st.fim)
+      linhas.push({ xAxis: e.ts, lineStyle: { color: c.muted, type: 'solid', width: 1, opacity: .45 }, label: { show: false } });
     if (I.indice) linhas.push({ yAxis: 100, lineStyle: { color: c.axis, type: 'solid', width: 1 }, label: { show: false } });
     else if (I.pct || I.nN === 0) linhas.push({ yAxis: 0, lineStyle: { color: c.axis, type: 'solid', width: 1 }, label: { show: false } });
     let area = [];
@@ -639,7 +695,46 @@
       : N === 1 ? '' : Math.min(1400, 440 + 190 * (N - 1)) + 'px';
     if ($('grafico').style.height !== alt) { $('grafico').style.height = alt; chart.resize(); }
     chart.setOption(opcao(), { notMerge: true });
+    desenharEventos();
     atualizarUI();
+  }
+  // bolinhas dos eventos sobre o eixo X de cada painel (HTML por cima do gráfico); próximas demais empilham para cima
+  function desenharEventos() {
+    const box = $('eventos');
+    $('ev-tip').hidden = true;
+    box.textContent = '';
+    if (!st.ev || !chart) return;
+    const g = $('grafico'), ox = g.offsetLeft, oy = g.offsetTop, h = [], passoEv = movel() ? 12 : 15;
+    const vis = EVENTOS.map((e, i) => ({ e, i })).filter(x => x.e.ts >= st.ini && x.e.ts <= st.fim);
+    ultimoLayout.forEach((l, gi) => {
+      const fimFila = [];
+      for (const { e, i } of vis) {
+        const x = chart.convertToPixel({ xAxisIndex: gi }, e.ts);
+        if (!isFinite(x)) continue;
+        let fila = 0;
+        while (fimFila[fila] !== undefined && x - fimFila[fila] < passoEv) fila++;
+        fimFila[fila] = x;
+        const y = l.top + l.height - fila * passoEv;
+        h.push(`<button class="ev${e.b === 'virus' ? ' virus' : ''}" data-e="${i}" style="left:${(ox + x).toFixed(1)}px;top:${(oy + y).toFixed(1)}px" aria-label="${esc(e[LANG === 'en' ? 'en' : 'pt'][0])}">${iconeEv(e.b)}</button>`);
+      }
+    });
+    box.innerHTML = h.join('');
+  }
+  // texto do evento: ao passar o mouse; no toque, abre/fecha com o dedo
+  function mostrarEvento(btn) {
+    const e = EVENTOS[+btn.dataset.e], [tit, det] = e[LANG === 'en' ? 'en' : 'pt'], tip = $('ev-tip');
+    document.querySelectorAll('.ev.sel').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    tip.innerHTML = `<div class="d">${esc(fmtD(e.ts))} · ${esc(t('cat_' + e.c))}</div><b>${esc(tit)}</b><span>${esc(det)}</span>`;
+    tip.hidden = false;
+    const W = tip.parentElement.clientWidth, cx = btn.offsetLeft + btn.offsetWidth / 2, cy = btn.offsetTop + btn.offsetHeight / 2;
+    tip.style.left = Math.max(6, Math.min(W - tip.offsetWidth - 6, cx - tip.offsetWidth / 2)) + 'px';
+    const acima = cy - 14 - tip.offsetHeight;
+    tip.style.top = (acima >= 4 ? acima : cy + 14) + 'px';
+  }
+  function esconderEvento() {
+    $('ev-tip').hidden = true;
+    document.querySelectorAll('.ev.sel').forEach(b => b.classList.remove('sel'));
   }
   // durante o zoom: só os dados (modo %) e as marcas mudam
   function atualizarSeries() {
@@ -685,6 +780,7 @@
     requestAnimationFrame(() => {
       pend = false;
       atualizarSeries();
+      desenharEventos();
       atualizarUI();
     });
   }
@@ -1099,10 +1195,10 @@
   const CHAVE = 'series-historicas:estado', CHAVE_V = 'series-historicas:visoes';
   const lerLS = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
   const gravarLS = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-  const PADRAO = { grupos: [['ibovespa']], ref: 'ibovespa', freq: 'd', modo: 'val', log: false, eixos: 'escala', yz: {}, solto: [], gov: false, pinos: [] };
+  const PADRAO = { grupos: [['ibovespa']], ref: 'ibovespa', freq: 'd', modo: 'val', log: false, eixos: 'escala', yz: {}, solto: [], gov: false, ev: false, pinos: [] };
   // ateFim / pinoFim: o período e o ponto B "até o dado mais recente" acompanham as atualizações dos dados
   const estado = () => ({ grupos: st.grupos, ref: st.ref, freq: st.freq, modo: st.modo, log: st.log, eixos: st.eixos,
-    yz: st.yz, solto: [...st.solto], gov: st.gov, ini: st.ini, fim: st.fim, pinos: st.pinos,
+    yz: st.yz, solto: [...st.solto], gov: st.gov, ev: st.ev, ini: st.ini, fim: st.fim, pinos: st.pinos,
     ateFim: Math.abs(st.fim - extMax) < 5 * DIA,
     pinoFim: st.pinos.length > 0 && Math.abs(st.pinos[st.pinos.length - 1] - extMax) < 5 * DIA });
   // visão padrão do site (dados/padrao.json): primeira visita e "Limpar tudo"
@@ -1125,7 +1221,8 @@
     st.ref = ativos().includes(e.ref) ? e.ref : ativos()[0];
     st.freq = e.freq === 'm' ? 'm' : 'd'; st.modo = e.modo === 'pct' ? 'pct' : 'val'; st.log = !!e.log;
     st.eixos = e.eixos === 'comum' ? 'comum' : 'escala'; st.yz = e.yz || {}; st.solto = new Set(e.solto || []);
-    st.gov = !!e.gov; st.pinos = Array.isArray(e.pinos) ? e.pinos.slice(0, 2) : [];
+    st.gov = !!e.gov; st.ev = !!e.ev; st.pinos = Array.isArray(e.pinos) ? e.pinos.slice(0, 2) : [];
+    $('chip-ev').setAttribute('aria-pressed', st.ev);
     st.ini = null; recalcExtensao();
     if (e.ini && e.fim && e.fim - e.ini >= 7 * DIA) { st.ini = Math.max(extMin, e.ini); st.fim = Math.min(extMax, e.fim); }
     if (e.ateFim) st.fim = extMax;
@@ -1200,6 +1297,17 @@
     $('ir-grafico').onclick = () => $('principal').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('seg-eixo').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.eixos || e.target.disabled) return; st.eixos = v; montarGrupos(); desenhar(); };
     $('y-reset').onclick = () => { st.yz = {}; desenhar(); };
+    $('chip-ev').onclick = () => { st.ev = !st.ev; $('chip-ev').setAttribute('aria-pressed', st.ev); desenhar(); };
+    const evBox = $('eventos');
+    evBox.addEventListener('pointerover', e => { const b = e.target.closest('.ev'); if (b && e.pointerType === 'mouse') mostrarEvento(b); });
+    evBox.addEventListener('pointerout', e => { if (e.pointerType === 'mouse' && e.target.closest('.ev')) esconderEvento(); });
+    evBox.addEventListener('click', e => {
+      const b = e.target.closest('.ev');
+      if (!b) return;
+      e.stopPropagation();
+      if (b.classList.contains('sel') && !$('ev-tip').hidden && matchMedia('(hover: none)').matches) esconderEvento(); else mostrarEvento(b);
+    });
+    document.addEventListener('click', e => { if (!e.target.closest('.ev')) esconderEvento(); });
     $('seg-per').onclick = e => { const v = e.target.dataset?.v; if (v) aplicarPeriodo(preset(v), extMax); };
     const datas = () => {
       const i = Date.parse($('d-ini').value), f = Date.parse($('d-fim').value);

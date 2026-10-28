@@ -173,6 +173,28 @@ details.sec:not([open]) > summary::after { transform: rotate(-90deg); }
   background: color-mix(in srgb, var(--c) 22%, var(--panel));
 }
 .gchip[aria-pressed="true"]::before { content: "✓"; font-weight: 700; color: var(--fg); }
+.chip-gov .ke { width: 16px; height: 14px; flex: none; opacity: .35; display: block; }
+.chip-gov[aria-pressed="true"] .ke { opacity: 1; }
+
+/* eventos mundiais: bolinhas sobre o eixo X de cada painel; texto só ao passar o mouse ou tocar */
+.card { position: relative; }
+.eventos { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 5; }
+.ev {
+  position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; padding: 0;
+  border: 1.5px solid var(--panel); border-radius: 50%; overflow: hidden; background: var(--panel);
+  box-shadow: 0 0 0 1px var(--axis), 0 1px 3px rgba(0, 0, 0, .25); cursor: pointer; transition: transform .1s;
+}
+.ev.virus { border: 0; box-shadow: none; background: transparent; overflow: visible; width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+.ev svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.ev:hover, .ev.sel { transform: scale(1.4); z-index: 2; }
+.ev-tip {
+  position: absolute; z-index: 20; width: max-content; max-width: 260px; padding: 8px 11px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg);
+  box-shadow: var(--sombra); font-size: 12.5px; line-height: 1.4; pointer-events: none;
+}
+.ev-tip .d { font: 11px var(--mono); color: var(--muted); }
+.ev-tip b { display: block; font-weight: 600; font-size: 13px; margin: 2px 0; }
+.ev-tip span { color: var(--fg2); }
 
 .cont { margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font: 600 11px/18px var(--mono); text-align: center; letter-spacing: 0; }
 .cont:empty { display: none; }
@@ -314,6 +336,8 @@ details.sub > summary:hover { color: var(--fg); }
   .grupo.novo { min-height: 30px; }
   .rodape { padding: 6px 6px 8px; }
   .dica span:last-child { display: none; }
+  .ev { width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; border-width: 1px; }
+  .ev.virus { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -411,6 +435,10 @@ details.sub > summary:hover { color: var(--fg); }
             <span class="kg"><i style="background:var(--g-fhc)"></i><i style="background:var(--g-lula)"></i><i style="background:var(--g-dilma)"></i><i style="background:var(--g-bolsonaro)"></i></span>
             <span data-t="governos">Governos</span><span class="sw2"></span>
           </button>
+          <button class="chip-gov" id="chip-ev" aria-pressed="false" title="Eventos mundiais que afetaram a economia brasileira" data-t-title="evTit">
+            <svg class="ke" viewBox="0 0 16 14" aria-hidden="true"><path d="M4 1v8M12 1v8" stroke="var(--muted)" stroke-width="1.2"/><circle cx="4" cy="10.6" r="2.7" fill="#3c3b6e"/><circle cx="12" cy="10.6" r="2.7" fill="#d6336c"/></svg>
+            <span data-t="eventos">Eventos</span><span class="sw2"></span>
+          </button>
         </div>
       </details>
 
@@ -432,13 +460,15 @@ details.sub > summary:hover { color: var(--fg); }
       <div class="card">
         <div class="govs" id="govs" aria-label="Governos: clique para medir o mandato" data-t-aria="govsAria" hidden></div>
         <div id="grafico"><div class="aviso" data-t="carregando">Carregando…</div></div>
+        <div class="eventos" id="eventos"></div>
+        <div class="ev-tip" id="ev-tip" role="tooltip" hidden></div>
         <div class="rodape" id="rodape"></div>
       </div>
     </main>
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=99d68d22c3"></script>
+<script src="app.js?v=152892ba31"></script>
 <script data-goatcounter="https://jczanella.goatcounter.com/count" async src="https://gc.zgo.at/count.v5.js" crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>
 </body>
 </html>
