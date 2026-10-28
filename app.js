@@ -88,18 +88,9 @@
     p1a: ['1A', '1Y'], p5a: ['5A', '5Y'], p10a: ['10A', '10Y'], max: ['Máx', 'Max'],
     dataIni: ['Data inicial', 'Start date'], dataFim: ['Data final', 'End date'],
     freq: ['Frequência', 'Frequency'], diario: ['Diário', 'Daily'], mensal: ['Mensal', 'Monthly'],
-    exibicao: ['Exibição', 'Display'], unidade: ['Unidade', 'Unit'], valor: ['Valor', 'Value'],
-    valorTit: ['Valor original da série', 'Original value of the series'],
-    pctTit: ['Variação desde o início do período', 'Change since the start of the period'],
-    escala: ['Escala', 'Scale'], logTit: ['Escala logarítmica: mesma distância = mesma variação %', 'Log scale: same distance = same % change'],
-    eixoY: ['Eixo Y', 'Y axis'], comum: ['Comum', 'Shared'], comumTit: ['Uma escala para o gráfico todo', 'One scale for the whole chart'],
-    porUnid: ['Por unidade', 'Per unit'],
-    porUnidTit: ['Um eixo por unidade (pontos, %, R$…), cada um ajustável na barra ao lado do gráfico', 'One axis per unit (points, %, R$…), each adjustable on the bar beside the chart'],
-    resetEsc: ['Voltar as escalas ao padrão', 'Reset scales'],
     contexto: ['Contexto', 'Context'], governos: ['Governos', 'Governments'], govTit: ['Faixas dos mandatos presidenciais', 'Presidential terms shown as bands'],
     irFiltros: ['☰ Séries, período e filtros', '☰ Series, period and filters'],
     gruposAria: ['Gráficos: arraste uma série para juntar ou separar', 'Charts: drag a series to merge or split'],
-    inicio: ['Início', 'Start'], fim: ['Fim', 'End'], maxima: ['Máxima', 'High'], minima: ['Mínima', 'Low'],
     govsAria: ['Governos: clique para medir o mandato', 'Governments: click to measure the term'],
     carregando: ['Carregando…', 'Loading…'], erro: ['Não foi possível carregar os dados', 'Could not load the data'],
     noTri: ['no trimestre', 'over the quarter'], noAno: ['no ano', 'over the year'], noMes: ['no mês', 'over the month'],
@@ -114,14 +105,14 @@
     buscaPh: ['Buscar série (ex.: selic, pib, dólar)', 'Search series (e.g. selic, gdp, dollar)'], buscaAria: ['Buscar série', 'Search series'],
     nada: ['Nenhuma série encontrada', 'No series found'], series: ['Séries · ', 'Series · '],
     ordemTit: ['Arraste para mudar a ordem dos gráficos', 'Drag to reorder the charts'], separar: ['＋ arraste aqui para separar', '＋ drag here to split'],
-    chipTit: ['Clique: referência dos números · Arraste: juntar ou separar gráficos', 'Click: reference for the numbers · Drag: merge or split charts'],
+    chipTit: ['Arraste para juntar ou separar gráficos', 'Drag to merge or split charts'],
     eloSolto: ['Escala própria. Clique para ligar à escala das outras séries de mesma unidade', 'Own scale. Click to link it to the other series with the same unit'],
     eloLigado: ['Escala ligada às outras séries de mesma unidade. Clique para soltar', 'Scale linked to the other series with the same unit. Click to unlink'],
     remover: ['Remover ', 'Remove '], naoCarregou: ['não carregou', 'failed to load'], hoje: ['hoje', 'now'],
     govChipTit: ['Medir as séries neste governo · clique num vizinho para juntar mandatos seguidos', 'Measure the series in this term · click a neighbour to join consecutive terms'],
     padraoSite: ['Padrão do site', 'Site default'], abrirPadrao: ['Abrir a visão padrão do site', 'Open the site default view'],
     abrirVisao: ['Abrir esta visão', 'Open this view'], apagarVisao: ['Apagar a visão ', 'Delete view '],
-    dias: [' dias', ' days'], aa: [' a.a.', ' p.a.'], pp: [' p.p.', ' pp'],
+    aa: [' a.a.', ' p.a.'], pp: [' p.p.', ' pp'],
     eventos: ['Eventos', 'Events'], evTit: ['Eventos mundiais que afetaram a economia brasileira', 'World events that affected the Brazilian economy'],
     cat_guerra: ['Guerra', 'War'], cat_terror: ['Terrorismo', 'Terrorism'], cat_crise: ['Crise econômica', 'Economic crisis'],
     cat_saude: ['Saúde', 'Health'], cat_outro: ['Economia mundial', 'World economy'],
@@ -618,27 +609,12 @@
     if (I.indice) linhas.push({ yAxis: 100, lineStyle: { color: c.axis, type: 'solid', width: 1 }, label: { show: false } });
     else if (I.pct || I.nN === 0) linhas.push({ yAxis: 0, lineStyle: { color: c.axis, type: 'solid', width: 1 }, label: { show: false } });
     let area = [];
-    if (st.pinos.length === 2) {
-      const m = gi === 0 ? mede(id) : null;
-      area = [[{ xAxis: st.pinos[0], itemStyle: { color: c.band },
-        label: { show: !!m, position: 'insideBottom', distance: 10, formatter: m ? m.txt : '',
-          color: m && m.d >= 0 ? c.up : c.down, fontFamily: 'IBM Plex Mono, monospace', fontWeight: 600, fontSize: 13 } },
-        { xAxis: st.pinos[1] }]];
-    }
+    // faixa A–B sem rótulo: a variação de cada série fica na tabela A × B do rodapé
+    if (st.pinos.length === 2)
+      area = [[{ xAxis: st.pinos[0], itemStyle: { color: c.band }, label: { show: false } }, { xAxis: st.pinos[1] }]];
     return { ...out,
       markLine: { silent: true, symbol: 'none', animation: false, data: linhas },
       markArea: { silent: true, animation: false, data: area } };
-  }
-
-  // variação de uma série entre A e B
-  function mede(id) {
-    const a = brutos(id);
-    const p = pontoEm(a, st.pinos[0]) || a[0], q = pontoEm(a, st.pinos[1]);
-    if (!q || q[0] <= p[0]) return null;
-    const dias = Math.round((q[0] - p[0]) / DIA), anos = dias / 365.25;
-    if (bruto(id)) return { d: q[1] - p[1], txt: fmtDif(id, q[1] - p[1]), sub: fmtVal(id, p[1]) + ' → ' + fmtVal(id, q[1]), dias };
-    const f = q[1] / p[1] - 1;
-    return { d: f, txt: fmtP(f, 1), txtLongo: fmtP(f), sub: anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + t('aa') : '', dias };
   }
 
   // painel sob o ponteiro: medido antes do gráfico tratar o evento (listener em captura no contêiner)
@@ -865,43 +841,13 @@
 
   // ---------- painel ----------
   function atualizarUI() {
-    const id = st.ref, a = brutos(id), taxa = bruto(id);
-    const i0 = primeiroDesde(a, st.ini);
-    let i1 = primeiroDesde(a, st.fim + 1);
-    if (a[i1][0] > st.fim) i1--;
-    const fatia = a.slice(i0, Math.max(i0, i1) + 1);
-    $('st-k').style.setProperty('--c', `var(${CAT[id].cor})`);
-    $('st-nome').textContent = CAT[id].nome;
-    if (fatia.length) {
-      const p = fatia[0], q = fatia[fatia.length - 1];
-      let mx = p, mn = p;
-      for (const x of fatia) { if (x[1] > mx[1]) mx = x; if (x[1] < mn[1]) mn = x; }
-      const anos = (q[0] - p[0]) / DIA / 365.25, dias = fmtN(Math.round((q[0] - p[0]) / DIA), 0) + t('dias');
-      if (taxa) {
-        $('st-var').textContent = fmtDif(id, q[1] - p[1]); $('st-var').className = 'v';
-        $('st-var-s').textContent = dias;
-      } else {
-        const f = q[1] / p[1] - 1;
-        $('st-var').textContent = fmtP(f); $('st-var').className = 'v ' + classe(f);
-        $('st-var-s').textContent = anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + t('aa') : dias;
-      }
-      $('st-ini').textContent = fmtVal(id, p[1]); $('st-ini-s').textContent = fmtData(p[0]);
-      $('st-fim').textContent = fmtVal(id, q[1]); $('st-fim-s').textContent = fmtData(q[0]);
-      $('st-max').textContent = fmtVal(id, mx[1]); $('st-max-s').textContent = fmtData(mx[0]);
-      $('st-min').textContent = fmtVal(id, mn[1]); $('st-min-s').textContent = fmtData(mn[0]);
-    }
     $('d-ini').value = iso(st.ini); $('d-fim').value = iso(st.fim);
     const proximo = (x, y) => Math.abs(x - y) <= 4 * DIA;
     document.querySelectorAll('#seg-per button').forEach(b => {
       b.setAttribute('aria-pressed', proximo(st.fim, extMax) && proximo(st.ini, Math.max(extMin, preset(b.dataset.v))));
     });
     const pressiona = (sel, v) => document.querySelectorAll(sel + ' button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === v));
-    pressiona('#seg-freq', st.freq); pressiona('#seg-modo', st.modo); pressiona('#seg-escala', st.log ? 'log' : 'lin');
-    const infos = st.grupos.map(info);
-    $('m-val').disabled = $('m-pct').disabled = !infos.some(I => I.nN === 1 && !I.temTaxa && !I.indep);
-    $('e-log').disabled = !infos.some(I => I.nN > 0 && !I.temTaxa && !I.indep);
-    pressiona('#seg-eixo', st.eixos);
-    $('y-serie').disabled = !st.grupos.some(g => g.length > 1);
+    pressiona('#seg-freq', st.freq);
     const a2 = brutos(st.ref);
     const sel = govSelecionados(a2);
     document.querySelectorAll('#govs .gchip').forEach(b => {
@@ -962,7 +908,7 @@
     const box = $('fontes');
     montarBusca(box);
     for (const f of FONTES) {
-      const d = document.createElement('details'); d.className = 'sec'; d.open = true;
+      const d = document.createElement('details'); d.className = 'sec';
       const s = document.createElement('summary');
       s.innerHTML = `<span>${esc(t('series') + f.nome)}</span><span class="cont" data-conta="${esc(f.temas.flatMap(t => t.series).join(','))}"></span>`;
       const corpo = document.createElement('div'); corpo.className = 'sec-corpo';
@@ -971,8 +917,8 @@
         const l = document.createElement('div'); l.className = 'lista';
         let onde = corpo;
         if (t.nome) {
-          // subgrupo recolhível; abre fechado, exceto o primeiro tema de cada fonte
-          const sub = document.createElement('details'); sub.className = 'sub'; sub.open = t === f.temas[0];
+          // subgrupo recolhível; todos abrem fechados (pedido do usuário)
+          const sub = document.createElement('details'); sub.className = 'sub';
           const ss = document.createElement('summary');
           ss.innerHTML = `<span>${esc(t.nome)}</span><span class="cont" data-conta="${esc(t.series.join(','))}"></span>`;
           sub.append(ss); corpo.append(sub); onde = sub;
@@ -1219,8 +1165,9 @@
     st.grupos = (e.grupos || []).map(g => g.filter(id => series[id])).filter(g => g.length);
     if (!st.grupos.length) st.grupos = [['ibovespa']];
     st.ref = ativos().includes(e.ref) ? e.ref : ativos()[0];
-    st.freq = e.freq === 'm' ? 'm' : 'd'; st.modo = e.modo === 'pct' ? 'pct' : 'val'; st.log = !!e.log;
-    st.eixos = e.eixos === 'comum' ? 'comum' : 'escala'; st.yz = e.yz || {}; st.solto = new Set(e.solto || []);
+    // sem o grupo "Exibição": valor original, escala linear e um eixo por unidade, mesmo em visões antigas
+    st.freq = e.freq === 'm' ? 'm' : 'd'; st.modo = 'val'; st.log = false;
+    st.eixos = 'escala'; st.yz = e.yz || {}; st.solto = new Set(e.solto || []);
     st.gov = !!e.gov; st.ev = !!e.ev; st.pinos = Array.isArray(e.pinos) ? e.pinos.slice(0, 2) : [];
     $('chip-ev').setAttribute('aria-pressed', st.ev);
     st.ini = null; recalcExtensao();
@@ -1291,12 +1238,8 @@
   // ---------- eventos ----------
   function ligar() {
     $('seg-freq').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.freq) return; st.freq = v; desenhar(); rodape(); };
-    $('seg-modo').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.modo || e.target.disabled) return; st.modo = v; desenhar(); };
-    $('seg-escala').onclick = e => { const v = e.target.dataset?.v; if (!v || e.target.disabled) return; st.log = v === 'log'; desenhar(); };
     $('ir-filtros').onclick = () => $('menu').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('ir-grafico').onclick = () => $('principal').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    $('seg-eixo').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.eixos || e.target.disabled) return; st.eixos = v; montarGrupos(); desenhar(); };
-    $('y-reset').onclick = () => { st.yz = {}; desenhar(); };
     $('chip-ev').onclick = () => { st.ev = !st.ev; $('chip-ev').setAttribute('aria-pressed', st.ev); desenhar(); };
     const evBox = $('eventos');
     evBox.addEventListener('pointerover', e => { const b = e.target.closest('.ev'); if (b && e.pointerType === 'mouse') mostrarEvento(b); });

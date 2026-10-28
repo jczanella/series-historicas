@@ -96,10 +96,13 @@ header .seg button { font-size: 12px; padding: 0 8px; white-space: nowrap; }
 main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
 
 /* Menu lateral */
+/* dois blocos: visões/período/contexto em cima, séries embaixo */
 aside {
   position: sticky; top: max(12px, env(safe-area-inset-top, 0px)); max-height: calc(100vh - 24px); overflow-y: auto;
-  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  display: flex; flex-direction: column; gap: 22px;
 }
+.menu-bloco { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.menu-bloco:empty { display: none; }
 details.sec { border-bottom: 1px solid var(--line); }
 details.sec:last-child { border-bottom: 0; }
 details.sec > summary {
@@ -317,7 +320,7 @@ details.sub > summary:hover { color: var(--fg); }
     border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg);
     font: 500 14px var(--sans); cursor: pointer;
   }
-  aside .ir { width: calc(100% - 24px); margin: 12px 12px 4px; }
+  aside .ir { flex: none; }
 }
 @media (max-width: 640px) {
   body { padding-block: 12px 20px; }
@@ -364,7 +367,8 @@ details.sub > summary:hover { color: var(--fg); }
   <div class="app">
     <aside aria-label="Filtros e séries" data-t-aria="menu" id="menu">
       <button class="ir" id="ir-grafico" data-t="voltarGrafico">↑ Voltar ao gráfico</button>
-      <details class="sec" open>
+      <div class="menu-bloco">
+      <details class="sec">
         <summary data-t="visoes">Visões salvas</summary>
         <div class="sec-corpo">
           <div class="salvar">
@@ -379,7 +383,7 @@ details.sub > summary:hover { color: var(--fg); }
         </div>
       </details>
 
-      <details class="sec" open>
+      <details class="sec">
         <summary data-t="periodo">Período</summary>
         <div class="sec-corpo">
           <div class="seg" id="seg-per" aria-label="Período" data-t-aria="periodo">
@@ -403,32 +407,7 @@ details.sub > summary:hover { color: var(--fg); }
         </div>
       </details>
 
-      <details class="sec" open>
-        <summary data-t="exibicao">Exibição</summary>
-        <div class="sec-corpo">
-          <div class="linha"><span class="r" data-t="unidade">Unidade</span>
-            <div class="seg" id="seg-modo">
-              <button id="m-val" data-v="val" aria-pressed="true" title="Valor original da série" data-t="valor" data-t-title="valorTit">Valor</button>
-              <button id="m-pct" data-v="pct" aria-pressed="false" title="Variação desde o início do período" data-t-title="pctTit">%</button>
-            </div>
-          </div>
-          <div class="linha"><span class="r" data-t="escala">Escala</span>
-            <div class="seg" id="seg-escala">
-              <button id="e-lin" data-v="lin" aria-pressed="true">Linear</button>
-              <button id="e-log" data-v="log" aria-pressed="false" title="Escala logarítmica: mesma distância = mesma variação %" data-t-title="logTit">Log</button>
-            </div>
-          </div>
-          <div class="linha"><span class="r" data-t="eixoY">Eixo Y</span>
-            <div class="seg" id="seg-eixo">
-              <button id="y-comum" data-v="comum" aria-pressed="false" title="Uma escala para o gráfico todo" data-t="comum" data-t-title="comumTit">Comum</button>
-              <button id="y-serie" data-v="escala" aria-pressed="true" title="Um eixo por unidade (pontos, %, R$…), cada um ajustável na barra ao lado do gráfico" data-t="porUnid" data-t-title="porUnidTit">Por unidade</button>
-            </div>
-            <button class="mini" id="y-reset" title="Voltar as escalas ao padrão" aria-label="Voltar as escalas ao padrão" data-t-title="resetEsc" data-t-aria="resetEsc">↺</button>
-          </div>
-        </div>
-      </details>
-
-      <details class="sec" open>
+      <details class="sec">
         <summary data-t="contexto">Contexto</summary>
         <div class="sec-corpo">
           <button class="chip-gov" id="chip-gov" aria-pressed="false" title="Faixas dos mandatos presidenciais" data-t-title="govTit">
@@ -442,20 +421,14 @@ details.sub > summary:hover { color: var(--fg); }
         </div>
       </details>
 
-      <div id="fontes"></div>
+      </div>
+
+      <div class="menu-bloco" id="fontes"></div>
     </aside>
 
     <main id="principal">
       <button class="ir" id="ir-filtros" data-t="irFiltros">☰ Séries, período e filtros</button>
       <div class="grupos" id="grupos" aria-label="Gráficos: arraste uma série para juntar ou separar" data-t-aria="gruposAria"></div>
-
-      <div class="stats" id="stats">
-        <div class="stat"><div class="r"><span class="k" id="st-k"></span><span id="st-nome">Variação</span></div><div class="v" id="st-var">—</div><div class="s" id="st-var-s">&nbsp;</div></div>
-        <div class="stat"><div class="r" data-t="inicio">Início</div><div class="v" id="st-ini">—</div><div class="s" id="st-ini-s">&nbsp;</div></div>
-        <div class="stat"><div class="r" data-t="fim">Fim</div><div class="v" id="st-fim">—</div><div class="s" id="st-fim-s">&nbsp;</div></div>
-        <div class="stat"><div class="r" data-t="maxima">Máxima</div><div class="v" id="st-max">—</div><div class="s" id="st-max-s">&nbsp;</div></div>
-        <div class="stat"><div class="r" data-t="minima">Mínima</div><div class="v" id="st-min">—</div><div class="s" id="st-min-s">&nbsp;</div></div>
-      </div>
 
       <div class="card">
         <div class="govs" id="govs" aria-label="Governos: clique para medir o mandato" data-t-aria="govsAria" hidden></div>
@@ -468,7 +441,7 @@ details.sub > summary:hover { color: var(--fg); }
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=152892ba31"></script>
+<script src="app.js?v=8460a585ed"></script>
 <script data-goatcounter="https://jczanella.goatcounter.com/count" async src="https://gc.zgo.at/count.v5.js" crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>
 </body>
 </html>
