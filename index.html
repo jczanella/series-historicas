@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; base-uri 'none'; form-action 'none'; object-src 'none'; manifest-src 'self'">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Séries históricas do Brasil — Ibovespa, Selic, IPCA, PIB, balança comercial e mais, em gráficos interativos. Dados oficiais do Banco Central e do IBGE.">
+<title>Séries Históricas</title>
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; font: 14px system-ui, -apple-system, "Segoe UI", sans-serif; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: menu lateral (período, exibição, contexto, séries por fonte) + área principal (grupos de gráficos, estatísticas, gráfico com painéis empilhados) */
+:root {
+  --bg: #ededed; --panel: #ffffff; --fg: #161616; --fg2: #4f4f4f; --muted: #878787;
+  --line: #dedede; --axis: #c6c6c6; --hover: rgba(0, 0, 0, .05); --sombra: 0 10px 30px rgba(18, 22, 28, .16);
+  --accent: #2a78d6; --accent-soft: rgba(42, 120, 214, .12);
+  --up: #0b7a3b; --down: #c43c3c; --pin: #12161c; --band: rgba(18, 22, 28, .06);
+  --c-azul: #2a78d6; --c-laranja: #eb6834; --c-aqua: #1baf7a; --c-amarelo: #eda100;
+  --c-magenta: #e87ba4; --c-verde: #008300; --c-violeta: #6250d6; --c-vermelho: #e34948; --c-cinza: #5f6670;
+  --g-sarney: #7b3fb8; --g-collor: #2bb3d9; --g-itamar: #b9bec5; --g-fhc: #1e9e4a; --g-lula: #d62828;
+  --g-dilma: #e8559a; --g-temer: #7a8089; --g-bolsonaro: #1d4fb8; --g-alfa: .13;
+  --sans: "IBM Plex Sans", system-ui, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1013; --panel: #16191e; --fg: #eef0f3; --fg2: #b5bbc4; --muted: #7d848f;
+    --line: #252a31; --axis: #39404a; --hover: rgba(238, 240, 243, .06); --sombra: 0 10px 30px rgba(0, 0, 0, .5);
+    --accent: #3987e5; --accent-soft: rgba(57, 135, 229, .18);
+    --up: #2fb768; --down: #e66767; --pin: #eef0f3; --band: rgba(238, 240, 243, .07);
+    --c-azul: #3987e5; --c-laranja: #d95926; --c-aqua: #199e70; --c-amarelo: #c98500;
+    --c-magenta: #d55181; --c-verde: #2a9d2a; --c-violeta: #9085e9; --c-vermelho: #e66767; --c-cinza: #a6acb5;
+    --g-sarney: #a173e0; --g-collor: #4cc7ea; --g-itamar: #c4c8ce; --g-fhc: #34c06a; --g-lula: #ef4b4b;
+    --g-dilma: #f27ab3; --g-temer: #858b94; --g-bolsonaro: #4f84e6; --g-alfa: .2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1013; --panel: #16191e; --fg: #eef0f3; --fg2: #b5bbc4; --muted: #7d848f;
+  --line: #252a31; --axis: #39404a; --hover: rgba(238, 240, 243, .06); --sombra: 0 10px 30px rgba(0, 0, 0, .5);
+  --accent: #3987e5; --accent-soft: rgba(57, 135, 229, .18);
+  --up: #2fb768; --down: #e66767; --pin: #eef0f3; --band: rgba(238, 240, 243, .07);
+  --c-azul: #3987e5; --c-laranja: #d95926; --c-aqua: #199e70; --c-amarelo: #c98500;
+  --c-magenta: #d55181; --c-verde: #2a9d2a; --c-violeta: #9085e9; --c-vermelho: #e66767; --c-cinza: #a6acb5;
+  --g-sarney: #a173e0; --g-collor: #4cc7ea; --g-itamar: #c4c8ce; --g-fhc: #34c06a; --g-lula: #ef4b4b;
+  --g-dilma: #f27ab3; --g-temer: #858b94; --g-bolsonaro: #4f84e6; --g-alfa: .2;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14px;
+  padding-block: 18px 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1440px; margin: 0 auto; display: grid; gap: 14px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Cabeçalho */
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 24px; }
+h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+.fonte { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+/* Botões segmentados */
+.seg { display: inline-flex; flex-wrap: wrap; padding: 3px; gap: 2px; border-radius: 9px; background: var(--bg); border: 1px solid var(--line); }
+.seg button {
+  height: 28px; min-width: 34px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent;
+  color: var(--fg2); font: 500 13px var(--sans); cursor: pointer; flex: 1;
+}
+.seg button:hover { background: var(--hover); color: var(--fg); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.seg button:disabled { opacity: .35; cursor: not-allowed; background: transparent; }
+header .seg { background: var(--panel); flex-wrap: nowrap; }
+header .seg button { font-size: 12px; padding: 0 8px; white-space: nowrap; }
+
+/* Estrutura */
+.app { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 16px; align-items: start; }
+main { display: grid; gap: 12px; min-width: 0; }
+
+/* Menu lateral */
+aside {
+  position: sticky; top: max(12px, env(safe-area-inset-top, 0px)); max-height: calc(100vh - 24px); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+}
+details.sec { border-bottom: 1px solid var(--line); }
+details.sec:last-child { border-bottom: 0; }
+details.sec > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted);
+}
+details.sec > summary::-webkit-details-marker { display: none; }
+details.sec > summary::after { content: "▾"; font-size: 11px; transition: transform .15s; }
+details.sec:not([open]) > summary::after { transform: rotate(-90deg); }
+.sec-corpo { padding: 0 14px 14px; display: grid; gap: 10px; }
+.datas { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+.datas input {
+  width: 100%; min-width: 0; height: 32px; padding: 0 6px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--fg); font: 12px var(--mono);
+}
+.datas span { color: var(--muted); }
+.linha { display: flex; align-items: center; gap: 8px; }
+.linha .r { width: 56px; flex: none; font-size: 12px; color: var(--muted); }
+.linha .seg { flex: 1; }
+.salvar { display: flex; gap: 6px; }
+.salvar input {
+  flex: 1; min-width: 0; height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--panel); color: var(--fg); font: 13px var(--sans);
+}
+.btn { height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: 500 13px var(--sans); cursor: pointer; }
+.btn:hover { filter: brightness(1.08); }
+.btn-sec { height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--fg2); font: 500 12px var(--sans); cursor: pointer; }
+.btn-sec:hover { background: var(--hover); color: var(--fg); }
+.btn-sec.confirma { border-color: var(--down); color: var(--down); }
+.visoes { display: grid; gap: 2px; }
+.visoes:empty { display: none; }
+.visao { display: flex; align-items: center; gap: 4px; border-radius: 7px; }
+.visao:hover { background: var(--hover); }
+.visao .abrir { flex: 1; min-width: 0; display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border: 0; background: transparent; color: var(--fg); font: 13px var(--sans); text-align: left; cursor: pointer; }
+.visao .abrir span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.visao .abrir .q { font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+.visao .del { border: 0; background: transparent; color: var(--muted); width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px; }
+.visao .del:hover { color: var(--fg); background: var(--hover); }
+.v-rodape { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); }
+.mini { width: 32px; height: 32px; flex: none; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg2); font-size: 15px; cursor: pointer; }
+.mini:hover { color: var(--fg); background: var(--hover); }
+
+.chip-gov {
+  display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: 9px; background: transparent; color: var(--fg);
+  font: 500 13px var(--sans); cursor: pointer;
+}
+.chip-gov:hover { background: var(--hover); }
+.chip-gov .kg { display: inline-grid; grid-template-columns: repeat(4, 4px); gap: 1px; opacity: .35; }
+.chip-gov .kg i { height: 12px; border-radius: 1px; }
+.chip-gov .sw2 { margin-left: auto; width: 30px; height: 18px; border-radius: 9px; background: var(--axis); position: relative; transition: background .15s; }
+.chip-gov .sw2::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--panel); transition: left .15s; }
+.chip-gov[aria-pressed="true"] .kg { opacity: 1; }
+.chip-gov[aria-pressed="true"] .sw2 { background: var(--accent); }
+.chip-gov[aria-pressed="true"] .sw2::after { left: 14px; }
+.govs { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 8px 10px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.gchip {
+  display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 9px;
+  border: 1px solid var(--line); border-radius: 7px; background: transparent; color: var(--fg);
+  font: 500 12.5px var(--sans); cursor: pointer; text-align: left;
+}
+.gchip:hover { background: var(--hover); }
+.gchip .sw { width: 10px; height: 10px; border-radius: 2px; background: var(--c); flex: none; }
+.gchip .a { font-family: var(--mono); color: var(--muted); font-size: 11px; }
+.gchip[aria-pressed="true"] { border-color: var(--fg2); background: var(--hover); }
+
+.cont { margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font: 600 11px/18px var(--mono); text-align: center; letter-spacing: 0; }
+.cont:empty { display: none; }
+details.sub > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  padding: 6px 4px 4px; font-size: 12px; color: var(--fg2); font-weight: 500;
+}
+details.sub > summary::-webkit-details-marker { display: none; }
+details.sub > summary::before { content: "▾"; font-size: 10px; color: var(--muted); width: 10px; transition: transform .15s; }
+details.sub:not([open]) > summary::before { transform: rotate(-90deg); }
+details.sub > summary:hover { color: var(--fg); }
+.fonte-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.fonte-cab b { font-size: 13px; }
+.fonte-cab span { font-size: 11px; color: var(--muted); }
+.tema { font-size: 11px; color: var(--muted); margin: 6px 0 2px; }
+.lista { display: grid; gap: 1px; }
+.item {
+  display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 9px; width: 100%;
+  padding: 6px 8px; border: 0; border-radius: 7px; background: transparent; color: var(--fg);
+  font: 13px var(--sans); text-align: left; cursor: pointer;
+}
+.item:hover { background: var(--hover); }
+.item .cx { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid var(--axis); display: grid; place-items: center; }
+.item[aria-checked="true"] .cx { background: var(--c); border-color: var(--c); }
+.item[aria-checked="true"] .cx::after { content: ""; width: 7px; height: 4px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px, -1px); }
+.item .u { font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+.item.carregando .u::after { content: " …"; }
+
+/* Grupos de gráficos (arrastar para juntar/separar) */
+.grupos { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.grupo {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 42px; padding: 5px 6px 5px 8px;
+  border: 1px solid var(--line); border-radius: 11px; background: var(--panel);
+}
+.grupo .gn {
+  font: 600 11px var(--mono); color: var(--muted); height: 22px; padding: 0 6px; border-radius: 6px; background: var(--bg);
+  display: inline-flex; align-items: center; gap: 4px; cursor: grab; touch-action: none; user-select: none;
+}
+.grupo .gn::before { content: "⋮⋮"; letter-spacing: -2px; font-size: 10px; }
+.grupo .gn:hover { color: var(--fg); }
+.grupo.antes { box-shadow: -4px 0 0 var(--accent); }
+.grupo.depois { box-shadow: 4px 0 0 var(--accent); }
+.ativo.antes { box-shadow: -3px 0 0 var(--accent); }
+.ativo.depois { box-shadow: 3px 0 0 var(--accent); }
+.grupo.novo { border-style: dashed; background: transparent; color: var(--muted); font-size: 12px; padding: 0 12px; }
+.grupo.alvo { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ativo {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 2px 0 10px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font: 500 13px var(--sans);
+  color: var(--fg2); cursor: grab; touch-action: none; user-select: none;
+}
+.ativo:hover { border-color: var(--axis); }
+.ativo .k { width: 16px; height: 0; border-top: 3px solid var(--c); border-radius: 2px; }
+.ativo .k.traco { border-top-style: dashed; }
+.ativo.ref { border-color: var(--fg2); color: var(--fg); }
+.ativo .x { border: 0; background: transparent; color: var(--muted); cursor: pointer; width: 24px; height: 24px; border-radius: 50%; font-size: 14px; line-height: 1; }
+.ativo .x:hover { background: var(--hover); color: var(--fg); }
+.ativo .elo { border: 0; background: transparent; color: var(--accent); cursor: pointer; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; }
+.ativo .elo.solto { color: var(--muted); }
+.ativo .elo:hover { background: var(--hover); }
+.fantasma { position: fixed; z-index: 50; pointer-events: none; box-shadow: var(--sombra); opacity: .95; }
+
+/* Estatísticas do período */
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stat { background: var(--panel); padding: 10px 14px; min-width: 0; }
+.stat .r { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.stat .r .k { width: 12px; height: 0; border-top: 3px solid var(--c); flex: none; }
+.stat .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat .s { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 1px; white-space: nowrap; }
+.stat .v.up { color: var(--up); } .stat .v.down { color: var(--down); }
+
+/* Gráfico */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 6px 4px; }
+#grafico { width: 100%; height: clamp(380px, 64vh, 700px); }
+.aviso { display: grid; place-items: center; height: 100%; color: var(--muted); }
+.rodape { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 6px 10px 8px; min-height: 36px; border-top: 1px solid var(--line); }
+.dica { color: var(--muted); font-size: 12px; display: flex; gap: 14px; flex-wrap: wrap; }
+.dica b { color: var(--fg2); font-weight: 500; }
+.pino { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 4px 0 10px; border-radius: 999px; background: var(--hover); font-size: 13px; }
+.pino .l { font-weight: 600; }
+.pino button, .acao {
+  border: 0; background: transparent; color: var(--fg2); cursor: pointer; font: 500 13px var(--sans);
+  height: 24px; border-radius: 6px; padding: 0 8px;
+}
+.pino button:hover, .acao:hover { background: var(--hover); color: var(--fg); }
+.medida { font-family: var(--mono); font-size: 13px; display: inline-flex; gap: 8px; align-items: center; }
+.medida .k { width: 12px; height: 0; border-top: 3px solid var(--c); }
+.medida .v { font-weight: 500; font-size: 14px; }
+.medida .v.up { color: var(--up); } .medida .v.down { color: var(--down); }
+.medida .s { color: var(--muted); font-size: 12px; }
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  aside { position: static; max-height: none; }
+}
+@media (max-width: 640px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:first-child { grid-column: span 2; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Séries Históricas</h1>
+      <div class="fonte" id="fonte">—</div>
+    </div>
+    <div class="seg" id="seg-tema" aria-label="Tema">
+      <button id="t-claro" data-v="light" aria-pressed="false" title="Tema claro">☀ Claro</button>
+      <button id="t-escuro" data-v="dark" aria-pressed="false" title="Tema escuro">☾ Escuro</button>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside aria-label="Filtros e séries">
+      <details class="sec" open>
+        <summary>Visões salvas</summary>
+        <div class="sec-corpo">
+          <div class="salvar">
+            <input id="v-nome" type="text" maxlength="40" placeholder="Nome da visão" aria-label="Nome da visão">
+            <button id="v-salvar" class="btn">Salvar</button>
+          </div>
+          <div class="visoes" id="visoes"></div>
+          <div class="v-rodape">
+            <span>Fica salvo neste navegador</span>
+            <button id="v-limpar" class="btn-sec">Limpar tudo</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="sec" open>
+        <summary>Período</summary>
+        <div class="sec-corpo">
+          <div class="seg" id="seg-per" aria-label="Período">
+            <button id="p-1m" data-v="1m">1M</button>
+            <button id="p-6m" data-v="6m">6M</button>
+            <button id="p-ano" data-v="ano" title="Desde o início do ano">Ano</button>
+            <button id="p-1a" data-v="1a">1A</button>
+            <button id="p-5a" data-v="5a">5A</button>
+            <button id="p-10a" data-v="10a">10A</button>
+            <button id="p-max" data-v="max">Máx</button>
+          </div>
+          <div class="datas">
+            <input type="date" id="d-ini" aria-label="Data inicial">
+            <span>→</span>
+            <input type="date" id="d-fim" aria-label="Data final">
+          </div>
+          <div class="seg" id="seg-freq" aria-label="Frequência">
+            <button id="f-d" data-v="d" aria-pressed="true">Diário</button>
+            <button id="f-m" data-v="m" aria-pressed="false">Mensal</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="sec" open>
+        <summary>Exibição</summary>
+        <div class="sec-corpo">
+          <div class="linha"><span class="r">Unidade</span>
+            <div class="seg" id="seg-modo">
+              <button id="m-val" data-v="val" aria-pressed="true" title="Valor original da série">Valor</button>
+              <button id="m-pct" data-v="pct" aria-pressed="false" title="Variação desde o início do período">%</button>
+            </div>
+          </div>
+          <div class="linha"><span class="r">Escala</span>
+            <div class="seg" id="seg-escala">
+              <button id="e-lin" data-v="lin" aria-pressed="true">Linear</button>
+              <button id="e-log" data-v="log" aria-pressed="false" title="Escala logarítmica: mesma distância = mesma variação %">Log</button>
+            </div>
+          </div>
+          <div class="linha"><span class="r">Eixo Y</span>
+            <div class="seg" id="seg-eixo">
+              <button id="y-comum" data-v="comum" aria-pressed="false" title="Uma escala para o gráfico todo">Comum</button>
+              <button id="y-serie" data-v="escala" aria-pressed="true" title="Um eixo por unidade (pontos, %, R$…), cada um ajustável na barra ao lado do gráfico">Por unidade</button>
+            </div>
+            <button class="mini" id="y-reset" title="Voltar as escalas ao padrão" aria-label="Voltar as escalas ao padrão">↺</button>
+          </div>
+        </div>
+      </details>
+
+      <details class="sec" open>
+        <summary>Contexto</summary>
+        <div class="sec-corpo">
+          <button class="chip-gov" id="chip-gov" aria-pressed="false" title="Faixas dos mandatos presidenciais">
+            <span class="kg"><i style="background:var(--g-fhc)"></i><i style="background:var(--g-lula)"></i><i style="background:var(--g-dilma)"></i><i style="background:var(--g-bolsonaro)"></i></span>
+            Governos<span class="sw2"></span>
+          </button>
+        </div>
+      </details>
+
+      <div id="fontes"></div>
+    </aside>
+
+    <main>
+      <div class="grupos" id="grupos" aria-label="Gráficos: arraste uma série para juntar ou separar"></div>
+
+      <div class="stats" id="stats">
+        <div class="stat"><div class="r"><span class="k" id="st-k"></span><span id="st-nome">Variação</span></div><div class="v" id="st-var">—</div><div class="s" id="st-var-s">&nbsp;</div></div>
+        <div class="stat"><div class="r">Início</div><div class="v" id="st-ini">—</div><div class="s" id="st-ini-s">&nbsp;</div></div>
+        <div class="stat"><div class="r">Fim</div><div class="v" id="st-fim">—</div><div class="s" id="st-fim-s">&nbsp;</div></div>
+        <div class="stat"><div class="r">Máxima</div><div class="v" id="st-max">—</div><div class="s" id="st-max-s">&nbsp;</div></div>
+        <div class="stat"><div class="r">Mínima</div><div class="v" id="st-min">—</div><div class="s" id="st-min-s">&nbsp;</div></div>
+      </div>
+
+      <div class="card">
+        <div class="govs" id="govs" aria-label="Governos: clique para medir o mandato" hidden></div>
+        <div id="grafico"><div class="aviso">Carregando…</div></div>
+        <div class="rodape" id="rodape"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="vendor/echarts.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

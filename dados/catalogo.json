@@ -1,0 +1,791 @@
+{
+ "fontes": [
+  {
+   "id": "b3",
+   "nome": "B3",
+   "site": "via Yahoo Finance",
+   "temas": [
+    {
+     "nome": null,
+     "series": [
+      "ibovespa"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ibge",
+   "nome": "IBGE",
+   "site": "sidra.ibge.gov.br · Contas Nacionais",
+   "temas": [
+    {
+     "nome": "PIB — principais",
+     "series": [
+      "pib_4t",
+      "pib",
+      "pib_tt",
+      "pib_ano",
+      "pib_anual",
+      "pib_valor",
+      "pib_indice",
+      "taxa_invest"
+     ]
+    },
+    {
+     "nome": "PIB — setores (acum. 4 trimestres)",
+     "series": [
+      "pib_agro",
+      "pib_ind",
+      "pib_serv",
+      "pib_transf",
+      "pib_extr",
+      "pib_constr",
+      "pib_elet",
+      "pib_com",
+      "pib_transp",
+      "pib_info",
+      "pib_fin",
+      "pib_imob",
+      "pib_adm",
+      "pib_outros"
+     ]
+    },
+    {
+     "nome": "PIB — demanda (acum. 4 trimestres)",
+     "series": [
+      "pib_familias",
+      "pib_governo",
+      "pib_fbcf",
+      "pib_exp",
+      "pib_imp"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "bcb",
+   "nome": "Banco Central",
+   "site": "bcb.gov.br",
+   "temas": [
+    {
+     "nome": "Juros e inflação",
+     "series": [
+      "selic_meta",
+      "ipca_12m",
+      "ipca_acum",
+      "selic_acum",
+      "ipca_mensal",
+      "igpm_acum",
+      "cdi_acum",
+      "inpc_acum"
+     ]
+    },
+    {
+     "nome": "Atividade e emprego",
+     "series": [
+      "pib_us",
+      "ibcbr",
+      "desocupacao"
+     ]
+    },
+    {
+     "nome": "Crédito",
+     "series": [
+      "icc",
+      "concessoes"
+     ]
+    },
+    {
+     "nome": "Balança comercial",
+     "series": [
+      "bal_saldo12",
+      "bal_exp12",
+      "bal_imp12",
+      "bal_corrente12",
+      "bal_saldo",
+      "bal_exp",
+      "bal_imp"
+     ]
+    },
+    {
+     "nome": "Balança comercial — subgrupos (12 meses)",
+     "series": [
+      "bal_merc_exp12",
+      "bal_merc_imp12",
+      "bal_merc_saldo12",
+      "bal_ouro_exp12",
+      "bal_ouro_imp12",
+      "bal_merch12"
+     ]
+    },
+    {
+     "nome": "Serviços (12 meses)",
+     "series": [
+      "serv_saldo12",
+      "serv_rec12",
+      "serv_desp12"
+     ]
+    },
+    {
+     "nome": "Setor externo e câmbio",
+     "series": [
+      "dolar",
+      "trans_corr",
+      "idp",
+      "reservas",
+      "euro"
+     ]
+    },
+    {
+     "nome": "Fiscal (+ superávit, − déficit)",
+     "series": [
+      "primario",
+      "nominal"
+     ]
+    }
+   ]
+  }
+ ],
+ "series": {
+  "ibovespa": {
+   "nome": "Ibovespa",
+   "tipo": "nivel",
+   "unid": "pts",
+   "freq": "diária",
+   "origem": "Yahoo Finance (^BVSP), fechamento diário",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_4t": {
+   "nome": "PIB acumulado 4 trimestres",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-laranja",
+   "traco": false,
+   "degrau": false
+  },
+  "pib": {
+   "nome": "PIB vs mesmo trimestre do ano anterior",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932",
+   "cor": "--c-laranja",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_tt": {
+   "nome": "PIB vs trimestre anterior (dessaz.)",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_ano": {
+   "nome": "PIB acumulado no ano",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932",
+   "cor": "--c-amarelo",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_anual": {
+   "nome": "PIB anual (crescimento)",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "anual",
+   "origem": "IBGE — SIDRA, tabela 5932 (acumulado em 4 trimestres no 4º tri)",
+   "cor": "--c-violeta",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_valor": {
+   "nome": "PIB em R$ (12 meses)",
+   "tipo": "nivel",
+   "unid": "R$ tri",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 1846 (preços correntes, soma de 4 trimestres)",
+   "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_indice": {
+   "nome": "PIB real (índice, dessaz.)",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 1621 (volume encadeado, média 1995 = 100)",
+   "cor": "--c-aqua",
+   "traco": false,
+   "degrau": false
+  },
+  "taxa_invest": {
+   "nome": "Taxa de investimento (FBCF/PIB)",
+   "tipo": "taxa",
+   "unid": "% PIB",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 1846 (FBCF ÷ PIB, 4 trimestres)",
+   "cor": "--c-magenta",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_agro": {
+   "nome": "Agropecuária",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_ind": {
+   "nome": "Indústria",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-laranja",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_serv": {
+   "nome": "Serviços",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-aqua",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_transf": {
+   "nome": "Indústria de transformação",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-amarelo",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_extr": {
+   "nome": "Indústria extrativa",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-magenta",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_constr": {
+   "nome": "Construção",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_elet": {
+   "nome": "Eletricidade, gás e água",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-violeta",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_com": {
+   "nome": "Comércio",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_transp": {
+   "nome": "Transporte e armazenagem",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-azul",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_info": {
+   "nome": "Informação e comunicação",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-laranja",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_fin": {
+   "nome": "Atividades financeiras",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-aqua",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_imob": {
+   "nome": "Atividades imobiliárias",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-amarelo",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_adm": {
+   "nome": "Administração pública, saúde e educação",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-magenta",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_outros": {
+   "nome": "Outros serviços",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-verde",
+   "traco": true,
+   "degrau": false
+  },
+  "pib_familias": {
+   "nome": "Consumo das famílias",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_governo": {
+   "nome": "Consumo do governo",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-laranja",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_fbcf": {
+   "nome": "Investimento (FBCF)",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-aqua",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_exp": {
+   "nome": "Exportações de bens e serviços",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-amarelo",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_imp": {
+   "nome": "Importações de bens e serviços",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "trimestral",
+   "origem": "IBGE — SIDRA, tabela 5932 (var. % acumulada em 4 trimestres)",
+   "cor": "--c-magenta",
+   "traco": false,
+   "degrau": false
+  },
+  "selic_meta": {
+   "nome": "Selic meta",
+   "tipo": "taxa",
+   "unid": "% a.a.",
+   "freq": "Copom",
+   "origem": "Banco Central do Brasil — SGS 432",
+   "cor": "--c-cinza",
+   "traco": false,
+   "degrau": true
+  },
+  "ipca_12m": {
+   "nome": "IPCA 12 meses",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 13522",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "ipca_acum": {
+   "nome": "IPCA acumulado",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 433 (acumulado, 30/06/1994 = 100)",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "selic_acum": {
+   "nome": "Selic acumulada",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — SGS 11 (acumulado, 30/06/1994 = 100)",
+   "cor": "--c-cinza",
+   "traco": true,
+   "degrau": false
+  },
+  "ipca_mensal": {
+   "nome": "IPCA mensal",
+   "tipo": "taxa",
+   "unid": "% a.m.",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 433",
+   "cor": "--c-magenta",
+   "traco": false,
+   "degrau": false
+  },
+  "igpm_acum": {
+   "nome": "IGP-M acumulado",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 189 (acumulado, 30/06/1994 = 100)",
+   "cor": "--c-amarelo",
+   "traco": false,
+   "degrau": false
+  },
+  "cdi_acum": {
+   "nome": "CDI acumulado",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — SGS 12 (acumulado, 30/06/1994 = 100)",
+   "cor": "--c-aqua",
+   "traco": false,
+   "degrau": false
+  },
+  "inpc_acum": {
+   "nome": "INPC acumulado",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 188 (acumulado, 30/06/1994 = 100)",
+   "cor": "--c-violeta",
+   "traco": false,
+   "degrau": false
+  },
+  "pib_us": {
+   "nome": "PIB em US$ (12 meses)",
+   "tipo": "nivel",
+   "unid": "US$ tri",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 4385 (PIB mensal estimado pelo BCB, soma de 12 meses)",
+   "cor": "--c-verde",
+   "traco": true,
+   "degrau": false
+  },
+  "ibcbr": {
+   "nome": "IBC-Br",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 24364 (com ajuste sazonal)",
+   "cor": "--c-laranja",
+   "traco": true,
+   "degrau": false
+  },
+  "desocupacao": {
+   "nome": "Desemprego",
+   "tipo": "taxa",
+   "unid": "%",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 24369 (IBGE, PNAD Contínua)",
+   "cor": "--c-violeta",
+   "traco": false,
+   "degrau": false
+  },
+  "icc": {
+   "nome": "Custo do crédito (ICC)",
+   "tipo": "taxa",
+   "unid": "% a.a.",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 25351",
+   "cor": "--c-amarelo",
+   "traco": false,
+   "degrau": false
+  },
+  "concessoes": {
+   "nome": "Concessões recursos livres",
+   "tipo": "nivel",
+   "unid": "R$ bi",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 20634, R$ bilhões",
+   "cor": "--c-aqua",
+   "traco": true,
+   "degrau": false
+  },
+  "bal_saldo12": {
+   "nome": "Saldo comercial (12 meses)",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22707 (balanço de pagamentos), soma de 12 meses",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_exp12": {
+   "nome": "Exportações (12 meses)",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22708, soma de 12 meses",
+   "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_imp12": {
+   "nome": "Importações (12 meses)",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22709, soma de 12 meses",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_corrente12": {
+   "nome": "Corrente de comércio (12 meses)",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22708 + 22709, soma de 12 meses",
+   "cor": "--c-violeta",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_saldo": {
+   "nome": "Saldo comercial mensal",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 22707",
+   "cor": "--c-azul",
+   "traco": true,
+   "degrau": false
+  },
+  "bal_exp": {
+   "nome": "Exportações mensais",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 22708",
+   "cor": "--c-verde",
+   "traco": true,
+   "degrau": false
+  },
+  "bal_imp": {
+   "nome": "Importações mensais",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 22709",
+   "cor": "--c-vermelho",
+   "traco": true,
+   "degrau": false
+  },
+  "bal_merc_exp12": {
+   "nome": "Exportações de mercadorias em geral",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22711, soma de 12 meses",
+   "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_merc_imp12": {
+   "nome": "Importações de mercadorias em geral",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22712, soma de 12 meses",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_merc_saldo12": {
+   "nome": "Saldo de mercadorias em geral",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22710, soma de 12 meses",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_ouro_exp12": {
+   "nome": "Exportações de ouro não monetário",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22717, soma de 12 meses",
+   "cor": "--c-amarelo",
+   "traco": false,
+   "degrau": false
+  },
+  "bal_ouro_imp12": {
+   "nome": "Importações de ouro não monetário",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22718, soma de 12 meses",
+   "cor": "--c-amarelo",
+   "traco": true,
+   "degrau": false
+  },
+  "bal_merch12": {
+   "nome": "Saldo de merchanting",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22713, soma de 12 meses",
+   "cor": "--c-magenta",
+   "traco": false,
+   "degrau": false
+  },
+  "serv_saldo12": {
+   "nome": "Saldo de serviços",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22704 − 22707 (bens e serviços − bens), soma de 12 meses",
+   "cor": "--c-azul",
+   "traco": false,
+   "degrau": false
+  },
+  "serv_rec12": {
+   "nome": "Receitas de serviços",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22705 − 22708, soma de 12 meses",
+   "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "serv_desp12": {
+   "nome": "Despesas de serviços",
+   "tipo": "fluxo",
+   "unid": "US$ bi",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 22706 − 22709, soma de 12 meses",
+   "cor": "--c-vermelho",
+   "traco": false,
+   "degrau": false
+  },
+  "dolar": {
+   "nome": "Dólar (PTAX)",
+   "tipo": "nivel",
+   "unid": "R$",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — SGS 1 (PTAX venda)",
+   "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "trans_corr": {
+   "nome": "Transações correntes",
+   "tipo": "taxa",
+   "unid": "% PIB",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 23079",
+   "cor": "--c-verde",
+   "traco": true,
+   "degrau": false
+  },
+  "idp": {
+   "nome": "IDP líquido",
+   "tipo": "taxa",
+   "unid": "% PIB",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 23080",
+   "cor": "--c-aqua",
+   "traco": false,
+   "degrau": false
+  },
+  "reservas": {
+   "nome": "Reservas internacionais",
+   "tipo": "nivel",
+   "unid": "US$ bi",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — SGS 13621 (conceito caixa)",
+   "cor": "--c-violeta",
+   "traco": true,
+   "degrau": false
+  },
+  "euro": {
+   "nome": "Euro (PTAX)",
+   "tipo": "nivel",
+   "unid": "R$",
+   "freq": "diária",
+   "origem": "Banco Central do Brasil — SGS 21619 (PTAX venda)",
+   "cor": "--c-magenta",
+   "traco": true,
+   "degrau": false
+  },
+  "primario": {
+   "nome": "Resultado primário",
+   "tipo": "taxa",
+   "unid": "% PIB",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 5793 (sinal invertido: + = superávit)",
+   "cor": "--c-azul",
+   "traco": true,
+   "degrau": false
+  },
+  "nominal": {
+   "nome": "Resultado nominal",
+   "tipo": "taxa",
+   "unid": "% PIB",
+   "freq": "12 meses",
+   "origem": "Banco Central do Brasil — SGS 5727 (sinal invertido: + = superávit)",
+   "cor": "--c-vermelho",
+   "traco": true,
+   "degrau": false
+  }
+ }
+}

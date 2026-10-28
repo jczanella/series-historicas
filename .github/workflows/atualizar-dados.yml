@@ -1,0 +1,39 @@
+# Atualiza as séries (Banco Central, IBGE, B3) e publica no GitHub Pages ao gravar no main.
+name: Atualizar dados
+
+on:
+  schedule:
+    - cron: "30 22 * * 1-5"   # dias úteis, 19h30 em Brasília (depois do fechamento e da PTAX)
+  workflow_dispatch:          # botão "Run workflow" para atualizar na hora
+
+# só o necessário: ler o código e gravar os dados novos
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-dados
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      # ações fixadas por commit (não por tag) para não executar código alterado depois
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: "3.12"
+      - name: Baixar séries
+        run: python -I scripts/atualizar_dados.py
+      - name: Gravar se houve mudança
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dados/
+          if git diff --cached --quiet; then
+            echo "Sem dados novos."
+          else
+            git commit -m "Atualiza dados $(date -u +%Y-%m-%d)"
+            git push
+          fi

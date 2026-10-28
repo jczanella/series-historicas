@@ -1,0 +1,5 @@
+# anotações locais do projeto e fonte do artifact (o site usa index.html + app.js gerados)
+CLAUDE.md
+series-historicas.html
+__pycache__/
+*.pyc
