@@ -7,7 +7,7 @@
    ["ibovespa", "pib_indice"],
    ["selic_meta", "ipca_12m", "desocupacao"],
    ["bal_saldo12", "ibcbr"],
-   ["dolar"]
+   ["dolar", "cambio_real"]
   ],
   "ref": "ibovespa",
   "freq": "m",

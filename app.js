@@ -138,7 +138,7 @@
       bal_merc_exp12: 'General merchandise exports', bal_merc_imp12: 'General merchandise imports', bal_merc_saldo12: 'General merchandise balance',
       bal_ouro_exp12: 'Non-monetary gold exports', bal_ouro_imp12: 'Non-monetary gold imports', bal_merch12: 'Merchanting balance',
       serv_saldo12: 'Services balance', serv_rec12: 'Services receipts', serv_desp12: 'Services payments',
-      dolar: 'US dollar (PTAX)', trans_corr: 'Current account', idp: 'Net FDI', reservas: 'International reserves', euro: 'Euro (PTAX)',
+      dolar: 'US dollar (PTAX)', cambio_real: 'Real effective exchange rate', trans_corr: 'Current account', idp: 'Net FDI', reservas: 'International reserves', euro: 'Euro (PTAX)',
       primario: 'Primary balance', nominal: 'Nominal balance',
       juro_pre_1a: '1-year fixed rate', juro_pre_2a: '2-year fixed rate', juro_pre_5a: '5-year fixed rate',
     },

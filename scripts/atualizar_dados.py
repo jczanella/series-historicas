@@ -346,6 +346,10 @@ serie("serv_desp12", "bcb", T, "Despesas de serviços", "fluxo", "US$ bi", "12 m
 
 T = "Setor externo e câmbio"
 serie("dolar", "bcb", T, "Dólar (PTAX)", "nivel", "R$", "diária", B + "1 (PTAX venda)", lambda: sgs(1), cor="--c-verde")
+# 11752 = contra a cesta de moedas dos parceiros comerciais (a 11753 é só contra o dólar, IPCA/CPI)
+serie("cambio_real", "bcb", T, "Câmbio real efetivo", "nivel", "índice", "mensal",
+      B + "11752 (cesta de moedas dos parceiros comerciais, deflacionada pelo IPCA; jun/1994 = 100; alta = real mais desvalorizado)",
+      lambda: mensal(sgs(11752, date(1994, 6, 1))), cor="--c-laranja")
 serie("trans_corr", "bcb", T, "Transações correntes", "taxa", "% PIB", "12 meses", B + "23079", lambda: mensal(sgs(23079)), cor="--c-verde", traco=True)
 serie("idp", "bcb", T, "IDP líquido", "taxa", "% PIB", "12 meses", B + "23080", lambda: mensal(sgs(23080)), cor="--c-aqua")
 serie("reservas", "bcb", T, "Reservas internacionais", "nivel", "US$ bi", "diária", B + "13621 (conceito caixa)", lambda: escala(sgs(13621), 1 / 1000), cor="--c-violeta", traco=True)

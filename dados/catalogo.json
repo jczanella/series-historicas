@@ -137,6 +137,7 @@
      "nome": "Setor externo e câmbio",
      "series": [
       "dolar",
+      "cambio_real",
       "trans_corr",
       "idp",
       "reservas",
@@ -766,6 +767,16 @@
    "freq": "diária",
    "origem": "Banco Central do Brasil — SGS 1 (PTAX venda)",
    "cor": "--c-verde",
+   "traco": false,
+   "degrau": false
+  },
+  "cambio_real": {
+   "nome": "Câmbio real efetivo",
+   "tipo": "nivel",
+   "unid": "índice",
+   "freq": "mensal",
+   "origem": "Banco Central do Brasil — SGS 11752 (cesta de moedas dos parceiros comerciais, deflacionada pelo IPCA; jun/1994 = 100; alta = real mais desvalorizado)",
+   "cor": "--c-laranja",
    "traco": false,
    "degrau": false
   },
