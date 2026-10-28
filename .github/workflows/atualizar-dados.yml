@@ -35,5 +35,6 @@ jobs:
             echo "Sem dados novos."
           else
             git commit -m "Atualiza dados $(date -u +%Y-%m-%d)"
+            git pull --rebase origin main
             git push
           fi
