@@ -53,6 +53,7 @@ html = f"""<!doctype html>
 {titulo}
 {RESET}
 {links}
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 {estilo}
 </head>
 <body>
