@@ -127,6 +127,8 @@ details.sec:not([open]) > summary::after { transform: rotate(-90deg); }
 .visao .abrir { flex: 1; min-width: 0; display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border: 0; background: transparent; color: var(--fg); font: 13px var(--sans); text-align: left; cursor: pointer; }
 .visao .abrir span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .visao .abrir .q { font: 11px var(--mono); color: var(--muted); white-space: nowrap; }
+.visao.fixa .abrir { font-weight: 600; }
+.visao.fixa .q { color: var(--accent); font-size: 13px; }
 .visao .del { border: 0; background: transparent; color: var(--muted); width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px; }
 .visao .del:hover { color: var(--fg); background: var(--hover); }
 .v-rodape { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); }
@@ -155,7 +157,12 @@ details.sec:not([open]) > summary::after { transform: rotate(-90deg); }
 .gchip:hover { background: var(--hover); }
 .gchip .sw { width: 10px; height: 10px; border-radius: 2px; background: var(--c); flex: none; }
 .gchip .a { font-family: var(--mono); color: var(--muted); font-size: 11px; }
-.gchip[aria-pressed="true"] { border-color: var(--fg2); background: var(--hover); }
+/* governo medido (pontos A/B no mandato): fundo na cor do governo, borda forte e ✓ */
+.gchip[aria-pressed="true"] {
+  border-color: var(--c); border-width: 2px; padding: 0 8px; font-weight: 600;
+  background: color-mix(in srgb, var(--c) 22%, var(--panel));
+}
+.gchip[aria-pressed="true"]::before { content: "✓"; font-weight: 700; color: var(--fg); }
 
 .cont { margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: #fff; font: 600 11px/18px var(--mono); text-align: center; letter-spacing: 0; }
 .cont:empty { display: none; }
@@ -403,7 +410,7 @@ details.sub > summary:hover { color: var(--fg); }
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=5f92bb5d75"></script>
+<script src="app.js?v=9e7038dd3a"></script>
 <script data-goatcounter="https://jczanella.goatcounter.com/count" async src="https://gc.zgo.at/count.v5.js" crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>
 </body>
 </html>

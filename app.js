@@ -898,8 +898,10 @@
     ateFim: Math.abs(st.fim - extMax) < 5 * DIA,
     pinoFim: st.pinos.length > 0 && Math.abs(st.pinos[st.pinos.length - 1] - extMax) < 5 * DIA });
   // visão padrão do site (dados/padrao.json): primeira visita e "Limpar tudo"
-  const padraoSite = () => fetch('dados/padrao.json').then(r => r.ok ? r.json() : Promise.reject())
-    .then(j => j.estado).catch(() => PADRAO);
+  let padraoCache = null;
+  const padraoSite = () => padraoCache ? Promise.resolve(padraoCache)
+    : fetch('dados/padrao.json').then(r => r.ok ? r.json() : Promise.reject())
+      .then(j => { padraoCache = j.estado; montarVisoes(); return j.estado; }).catch(() => PADRAO);
   let pronto = false, tSalvar = 0;
   // a tela atual é salva sozinha a cada mudança e volta ao reabrir a página
   function autoSalvar() {
@@ -929,6 +931,16 @@
   function montarVisoes() {
     const box = $('visoes'), lista = lerLS(CHAVE_V) || [];
     box.textContent = '';
+    // visão padrão do site: fixa no topo para todos, não pode ser apagada
+    if (padraoCache) {
+      const linha = document.createElement('div'); linha.className = 'visao fixa';
+      const ab = document.createElement('button'); ab.className = 'abrir';
+      const nm = document.createElement('span'); nm.textContent = 'Padrão do site';
+      const q = document.createElement('span'); q.className = 'q'; q.textContent = '★';
+      ab.append(nm, q); ab.title = 'Abrir a visão padrão do site';
+      ab.onclick = () => aplicarEstado(padraoCache);
+      linha.append(ab); box.append(linha);
+    }
     lista.forEach((v, i) => {
       const linha = document.createElement('div'); linha.className = 'visao';
       const ab = document.createElement('button'); ab.className = 'abrir';
@@ -1030,7 +1042,8 @@
       montarFontes(); governos(); ligar(); ligarVisoes();
       const salvo = lerLS(CHAVE);
       // quem já usou a página vê a própria tela; na primeira visita, a visão padrão do site
-      return (salvo ? Promise.resolve(salvo) : padraoSite()).then(aplicarEstado).then(() => { pronto = true; });
+      const padrao = padraoSite();   // sempre carrega: também aparece fixo na lista de visões salvas
+      return (salvo ? Promise.resolve(salvo) : padrao).then(aplicarEstado).then(() => { pronto = true; });
     })
     .catch(err => { $('grafico').innerHTML = '<div class="aviso">Não foi possível carregar os dados (' + esc(err) + ').</div>'; });
 })();
