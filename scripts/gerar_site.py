@@ -6,6 +6,7 @@ ECharts é servido de vendor/ (sem depender de CDN de terceiros).
 
 Uso:  python -I scripts/gerar_site.py
 """
+import hashlib
 import re
 from pathlib import Path
 
@@ -31,6 +32,9 @@ img { max-width: 100%; }
 [hidden] { display: none !important; }
 </style>"""
 
+# versão no endereço do script: cada mudança vira um endereço novo e o cache do navegador não serve código velho
+versao = hashlib.sha256(script.encode("utf-8")).hexdigest()[:10]
+
 html = f"""<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -47,7 +51,7 @@ html = f"""<!doctype html>
 <body>
 {corpo}
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v={versao}"></script>
 </body>
 </html>
 """
