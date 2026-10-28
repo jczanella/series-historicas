@@ -210,6 +210,7 @@
   function opcao() {
     MARG = margens();
     const fsz = movel() ? 10 : 11;
+    ultimoLayout = layout();
     const c = cores(), L = layout(), N = st.grupos.length, mono = 'IBM Plex Mono, monospace';
     const so = ativos().length === 1;
     const grids = L.map(l => ({ left: MARG.esq, right: MARG.dir, top: l.top, height: l.height }));
@@ -434,6 +435,13 @@
     return { d: f, txt: fmtP(f, 1), txtLongo: fmtP(f), sub: anos >= 1 ? fmtP(Math.pow(q[1] / p[1], 1 / anos) - 1) + ' a.a.' : '', dias };
   }
 
+  // painel sob o ponteiro: medido antes do gráfico tratar o evento (listener em captura no contêiner)
+  let painelSob = 0, ultimoLayout = [];
+  function ondeEsta(ev) {
+    const y = ev.clientY - $('grafico').getBoundingClientRect().top;
+    const i = ultimoLayout.findIndex(l => y >= l.top - MARG.vao / 2 && y <= l.top + l.height + MARG.vao / 2);
+    if (i >= 0) painelSob = i;
+  }
   function tooltip(params) {
     const lista = Array.isArray(params) ? params : [params];
     if (!lista.length) return '';
@@ -441,9 +449,10 @@
     let h = `<div style="display:flex;justify-content:space-between;gap:16px;${mono}font-size:12px;color:${c.muted};margin-bottom:4px"><span>${esc(fmtData(ts))}</span>`
       + (g ? `<span style="display:inline-flex;align-items:center;gap:6px;font-family:IBM Plex Sans,sans-serif;color:${c.fg2}"><i style="width:9px;height:9px;border-radius:2px;background:${c.cor(g.cor)}"></i>${esc(g.nome)}</span>` : '')
       + '</div>';
-    const poucas = ativos().length <= 2;
-    st.grupos.forEach((grp, gi) => {
-      if (gi > 0) h += `<div style="height:1px;background:${c.line};margin:6px 0 4px"></div>`;
+    // só as séries do gráfico (painel) onde está o mouse ou o dedo
+    const grp = st.grupos[Math.min(painelSob, st.grupos.length - 1)] || st.grupos[0];
+    const poucas = grp.length <= 2;
+    {
       for (const id of grp) {
         const a = brutos(id), p = pontoEm(a, ts);
         if (!p) continue;
@@ -469,7 +478,7 @@
           h += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;padding-left:20px">
             <span style="color:${c.muted}">${r}</span><span style="${mono}color:${f >= 0 ? c.up : c.down}">${txt}</span></div>`;
       }
-    });
+    }
     return h;
   }
 
@@ -982,6 +991,7 @@
     const zr = chart.getZr();
     let baixo = null;
     zr.on('mousedown', e => { baixo = [e.offsetX, e.offsetY]; });
+    for (const tipo of ['pointermove', 'pointerdown']) $('grafico').addEventListener(tipo, ondeEsta, { capture: true, passive: true });
     zr.on('mousemove', e => {
       if (caixasTitulo.some(b => e.offsetX >= b.x && e.offsetX <= b.x + b.w && e.offsetY >= b.y && e.offsetY <= b.y + b.h)) zr.setCursorStyle('pointer');
     });
