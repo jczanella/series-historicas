@@ -338,9 +338,8 @@
         filhos.push({ type: 'line', shape: { x1: x, y1: 11, x2: x + 14, y2: 11 },
           style: { stroke: c.cor(CAT[id].cor), lineWidth: 3, lineCap: 'round', lineDash: CAT[id].traco ? [4, 3] : null } });
         x += 20;
-        // abaixo do nome, pequeno: fonte (sem o detalhe entre parênteses) e data da atualização
-        const fonte = (CAT[id].origem || '').split(' (')[0].replace(/,? soma de 12 meses$/, '');
-        const sub = fonte + ' · atualizado em ' + fmtD(Date.parse(series[id].meta.atualizado));
+        // abaixo do nome, pequeno: só a fonte (sem o detalhe entre parênteses)
+        const sub = (CAT[id].origem || '').split(' (')[0].replace(/,? soma de 12 meses$/, '');
         filhos.push({ type: 'text', style: { text: CAT[id].nome, x, y: 11, verticalAlign: 'middle', fill: c.fg, font: f } });
         filhos.push({ type: 'text', style: { text: sub, x, y: 26, verticalAlign: 'middle', fill: c.muted, font: fs } });
         x += Math.max(medir(CAT[id].nome, f), medir(sub, fs)) + 16;
