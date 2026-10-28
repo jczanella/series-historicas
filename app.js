@@ -41,7 +41,8 @@
   }
   // séries que não viram "% desde o início" (taxas e fluxos): diferença na própria unidade
   const bruto = id => CAT[id].tipo !== 'nivel';
-  const fmtDif = (id, d) => CAT[id].unid[0] === '%' ? fmtPP(d) : (d > 0 ? '+' : d < 0 ? '−' : '') + fmtVal(id, Math.abs(d));
+  const fmtDif = (id, d) => CAT[id].unid[0] === '%' ? fmtPP(d)
+    : (d > 0 ? '+' : d < 0 ? '−' : '') + (CAT[id].unid === 'R$' && Math.abs(d) < 0.1 ? 'R$ ' + fmtN(Math.abs(d), 4) : fmtVal(id, Math.abs(d)));
 
   // ---------- tema claro/escuro (lembrado neste navegador) ----------
   const raiz = document.documentElement;
@@ -113,7 +114,10 @@
   }
   // último ponto com data <= ts; null fora da série (trimestral aceita até ~100 dias de atraso)
   function pontoEm(arr, ts) {
-    if (ts < arr[0][0] || ts > arr[arr.length - 1][0] + (arr.length > 1 && arr[1][0] - arr[0][0] > 200 * DIA ? 370 : 100) * DIA) return null;
+    // tolerância depois do último dado: o último valor divulgado vale até sair o próximo (trimestral ~ 5 meses, anual ~ 13)
+    const passoSerie = arr.length > 1 ? arr[1][0] - arr[0][0] : 0;
+    const tol = passoSerie > 200 * DIA ? 400 : passoSerie > 60 * DIA ? 200 : 100;
+    if (ts < arr[0][0] || ts > arr[arr.length - 1][0] + tol * DIA) return null;
     let i = primeiroDesde(arr, ts);
     if (arr[i][0] > ts) i--;
     return i >= 0 ? arr[i] : null;
@@ -599,7 +603,10 @@
         const td = tr.insertCell(); td.className = cls; td.textContent = txt;
         if (sub) { const s = document.createElement('div'); s.className = 's'; s.textContent = sub; td.append(s); }
       };
-      if (!p || !q || q[0] <= p[0]) { celula('—'); celula(q ? fmtVal(id, q[1]) : '—'); celula('sem dado em A', 'n s'); celula(''); return; }
+      if (!p || !q || q[0] <= p[0]) {
+        celula(p ? fmtVal(id, p[1]) : '—'); celula(q ? fmtVal(id, q[1]) : '—');
+        celula(!p ? 'sem dado em A' : !q ? 'sem dado em B' : 'mesmo dado em A e B', 'n s'); celula(''); return;
+      }
       celula(fmtVal(id, p[1])); celula(fmtVal(id, q[1]));
       const dif = q[1] - p[1], anos = (q[0] - p[0]) / DIA / 365.25;
       if (CAT[id].unid[0] === '%') {
