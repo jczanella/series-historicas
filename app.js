@@ -181,7 +181,8 @@
   // ---------- gráfico ----------
   // margens iguais em todos os painéis (eixos X alinhados); no modo "por série" abrem espaço
   // para o 2º eixo à esquerda e para as barras verticais à direita
-  let MARG = margens(), yBase = [];
+  // valor inicial fixo: o catálogo ainda não carregou quando o script começa (opcao() recalcula)
+  let MARG = { esq: 14, dir: 96, topo: 26, baixo: 74, vao: 34 }, yBase = [];
   function margens() {
     const ind = st.grupos.filter(g => info(g).indep);
     const n = Math.max(1, ...ind.map(g => eixosDe(g).length));
