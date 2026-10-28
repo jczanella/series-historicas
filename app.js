@@ -827,8 +827,14 @@
   const lerLS = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
   const gravarLS = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
   const PADRAO = { grupos: [['ibovespa']], ref: 'ibovespa', freq: 'd', modo: 'val', log: false, eixos: 'escala', yz: {}, solto: [], gov: false, pinos: [] };
+  // ateFim / pinoFim: o período e o ponto B "até o dado mais recente" acompanham as atualizações dos dados
   const estado = () => ({ grupos: st.grupos, ref: st.ref, freq: st.freq, modo: st.modo, log: st.log, eixos: st.eixos,
-    yz: st.yz, solto: [...st.solto], gov: st.gov, ini: st.ini, fim: st.fim, pinos: st.pinos });
+    yz: st.yz, solto: [...st.solto], gov: st.gov, ini: st.ini, fim: st.fim, pinos: st.pinos,
+    ateFim: Math.abs(st.fim - extMax) < 5 * DIA,
+    pinoFim: st.pinos.length > 0 && Math.abs(st.pinos[st.pinos.length - 1] - extMax) < 5 * DIA });
+  // visão padrão do site (dados/padrao.json): primeira visita e "Limpar tudo"
+  const padraoSite = () => fetch('dados/padrao.json').then(r => r.ok ? r.json() : Promise.reject())
+    .then(j => j.estado).catch(() => PADRAO);
   let pronto = false, tSalvar = 0;
   // a tela atual é salva sozinha a cada mudança e volta ao reabrir a página
   function autoSalvar() {
@@ -847,6 +853,11 @@
     st.gov = !!e.gov; st.pinos = Array.isArray(e.pinos) ? e.pinos.slice(0, 2) : [];
     st.ini = null; recalcExtensao();
     if (e.ini && e.fim && e.fim - e.ini >= 7 * DIA) { st.ini = Math.max(extMin, e.ini); st.fim = Math.min(extMax, e.fim); }
+    if (e.ateFim) st.fim = extMax;
+    if (e.pinoFim && st.pinos.length) {
+      const a = brutos(st.ref);
+      st.pinos[st.pinos.length - 1] = a[a.length - 1][0];
+    }
     $('govs').hidden = !st.gov; $('chip-gov').setAttribute('aria-pressed', st.gov);
     montarGrupos(); marcarMenus(); cabecalho(); desenhar(); rodape();
   }
@@ -890,7 +901,7 @@
       }
       clearTimeout(tConf); b.classList.remove('confirma'); b.textContent = 'Limpar tudo';
       gravarLS(CHAVE, null);
-      aplicarEstado(PADRAO);
+      padraoSite().then(aplicarEstado);
     };
     montarVisoes();
   }
@@ -944,7 +955,8 @@
       chart = echarts.init($('grafico'), null, { renderer: 'canvas' });
       montarFontes(); governos(); ligar(); ligarVisoes();
       const salvo = lerLS(CHAVE);
-      return (salvo ? aplicarEstado(salvo) : Promise.resolve(atualizarTudo())).then(() => { pronto = true; });
+      // quem já usou a página vê a própria tela; na primeira visita, a visão padrão do site
+      return (salvo ? Promise.resolve(salvo) : padraoSite()).then(aplicarEstado).then(() => { pronto = true; });
     })
     .catch(err => { $('grafico').innerHTML = '<div class="aviso">Não foi possível carregar os dados (' + esc(err) + ').</div>'; });
 })();

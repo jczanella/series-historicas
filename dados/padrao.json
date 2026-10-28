@@ -1,0 +1,41 @@
+{
+ "nome": "Padrão",
+ "definido_em": "2026-10-28",
+ "observacao": "Visão inicial de quem abre a página pela primeira vez. Só muda quando o dono do projeto pede.",
+ "estado": {
+  "grupos": [
+   [
+    "ibovespa"
+   ],
+   [
+    "selic_meta",
+    "ipca_12m",
+    "desocupacao"
+   ],
+   [
+    "bal_saldo12",
+    "ibcbr"
+   ],
+   [
+    "dolar",
+    "pib_ano"
+   ]
+  ],
+  "ref": "ibovespa",
+  "freq": "d",
+  "modo": "val",
+  "log": false,
+  "eixos": "escala",
+  "yz": {},
+  "solto": [],
+  "gov": true,
+  "ini": 883027241113,
+  "fim": 1793145600000,
+  "ateFim": true,
+  "pinos": [
+   1672617600000,
+   1793145600000
+  ],
+  "pinoFim": true
+ }
+}
