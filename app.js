@@ -60,7 +60,8 @@
 
   // grupos: cada grupo é um painel do gráfico, de cima para baixo
   const st = { freq: 'd', modo: 'val', log: false, ini: null, fim: null, pinos: [], grupos: [['ibovespa']], ref: 'ibovespa', gov: false,
-    eixos: 'escala', yz: {}, solto: new Set() };   // solto: séries com eixo próprio mesmo dividindo unidade   // yz: janela vertical [início%, fim%] de cada eixo no modo "por unidade"
+    eixos: 'escala', yz: {}, solto: new Set(),
+    escala: new Set() };   // painéis (1ª série) com a barra de escala aberta   // solto: séries com eixo próprio mesmo dividindo unidade   // yz: janela vertical [início%, fim%] de cada eixo no modo "por unidade"
   const series = {};      // id -> { d: [[ts, v]], m: [[ts, v]], meta }
   const carregando = {};  // id -> Promise
   let chart = null, extMin = 0, extMax = 0;
@@ -183,10 +184,14 @@
   // para o 2º eixo à esquerda e para as barras verticais à direita
   // valor inicial fixo: o catálogo ainda não carregou quando o script começa (opcao() recalcula)
   let MARG = { esq: 14, dir: 96, topo: 26, baixo: 74, vao: 34 }, yBase = [];
+  const movel = () => matchMedia('(max-width: 640px)').matches;
   function margens() {
-    const ind = st.grupos.filter(g => info(g).indep);
-    const n = Math.max(1, ...ind.map(g => eixosDe(g).length));
-    return { esq: ind.length ? 70 : 14, dir: 74 + n * 16 + 6, topo: 26, baixo: 74, vao: 34 };
+    const ind = st.grupos.filter(g => info(g).indep), m = movel();
+    // barras de escala só nos painéis abertos pelo clique no rótulo
+    const abertos = st.grupos.filter(g => st.escala.has(g[0]));
+    const n = Math.max(0, ...abertos.map(g => info(g).indep ? eixosDe(g).length : 1));
+    return { esq: ind.length ? (m ? 46 : 70) : (m ? 6 : 14), dir: (m ? 48 : 74) + (n ? n * 16 + 6 : 0),
+      topo: 26, baixo: m ? 58 : 74, vao: m ? 30 : 34 };
   }
   const passo = v => Math.abs(v) < 10 && v % 1 ? 1 : 0;
   function fmtEixo(id, v) {
@@ -204,13 +209,14 @@
   }
   function opcao() {
     MARG = margens();
+    const fsz = movel() ? 10 : 11;
     const c = cores(), L = layout(), N = st.grupos.length, mono = 'IBM Plex Mono, monospace';
     const so = ativos().length === 1;
     const grids = L.map(l => ({ left: MARG.esq, right: MARG.dir, top: l.top, height: l.height }));
     const eixosX = st.grupos.map((g, i) => ({
       type: 'time', gridIndex: i, min: extMin, max: extMax,
       axisLine: { lineStyle: { color: c.axis } }, axisTick: { show: false },
-      axisLabel: { show: i === N - 1, color: c.muted, hideOverlap: true, fontSize: 11 },
+      axisLabel: { show: i === N - 1, color: c.muted, hideOverlap: true, fontSize: fsz },
       splitLine: { show: false },
       axisPointer: { label: { show: i === N - 1, formatter: q => fmtData(q.value) } },
     }));
@@ -222,6 +228,12 @@
     const folga = v => (v.max - v.min) || Math.abs(v.max) || 1;
     const barra = (chave, idx, l, k, cor, log) => {
       const w = st.yz[chave] || (log ? [0, 100] : [100 / 3, 200 / 3]);
+      // painel com a escala fechada: zoom invisível que só mantém a janela escolhida
+      if (!st.escala.has(chave.split('|')[0])) {
+        barras.push({ id: 'y-' + chave, type: 'inside', yAxisIndex: idx, filterMode: 'none', start: w[0], end: w[1],
+          zoomOnMouseWheel: false, moveOnMouseMove: false, moveOnMouseWheel: false, preventDefaultMouseMove: false });
+        return;
+      }
       barras.push({
         id: 'y-' + chave, type: 'slider', yAxisIndex: idx, orient: 'vertical', filterMode: 'none',
         start: w[0], end: w[1], top: l.top, height: l.height, right: 8 + k * 16, width: 10,
@@ -242,10 +254,10 @@
           e.ids.forEach(x => { yIdx[x] = idx; });
           eixosY.push({
             type: 'value', gridIndex: i, position: k === 1 ? 'left' : 'right',
-            min: v => v.min - folga(v), max: v => v.max + folga(v), splitNumber: i === 0 ? 5 : 3,
+            min: v => v.min - folga(v), max: v => v.max + folga(v), splitNumber: i === 0 ? (movel() ? 4 : 5) : (movel() ? 2 : 3),
             axisLine: { show: k < 2, lineStyle: { color: cor, width: 2, type: so1 && CAT[id].traco ? 'dashed' : 'solid' } },
             axisTick: { show: false },
-            axisLabel: { show: k < 2, color: c.muted, fontSize: 11, fontFamily: mono, formatter: v => fmtEixo(id, v) },
+            axisLabel: { show: k < 2, color: c.muted, fontSize: fsz, fontFamily: mono, formatter: v => fmtEixo(id, v) },
             splitLine: { show: k === 0, lineStyle: { color: c.line } },
             axisPointer: k < 2 ? { label: { formatter: q => so1 ? fmtVal(id, q.value) : fmtEixo(id, q.value) } } : { show: false },
           });
@@ -262,8 +274,8 @@
       eixosY.push({
         type: I.log ? 'log' : 'value', logBase: 10, gridIndex: i, position: 'right',
         ...(I.log ? { scale: true } : { min: v => v.min - folga(v), max: v => v.max + folga(v) }),
-        splitNumber: i === 0 ? 5 : 3,
-        axisLabel: { color: c.muted, fontSize: 11, fontFamily: mono, formatter: v => fmt(v, passo(v)) },
+        splitNumber: i === 0 ? (movel() ? 4 : 5) : (movel() ? 2 : 3),
+        axisLabel: { color: c.muted, fontSize: fsz, fontFamily: mono, formatter: v => fmt(v, passo(v)) },
         splitLine: { lineStyle: { color: c.line } },
         axisPointer: { label: { formatter: q => I.pct ? fmt(q.value, 1) : fmtVal(id0, q.value) } },
       });
@@ -302,20 +314,20 @@
           type: 'cross', snap: false,
           lineStyle: { color: c.muted, type: 'dashed', width: 1 },
           crossStyle: { color: c.muted, type: 'dashed', width: 1 },
-          label: { backgroundColor: c.fg, color: c.panel, fontFamily: mono, fontSize: 11 },
+          label: { backgroundColor: c.fg, color: c.panel, fontFamily: mono, fontSize: fsz },
         },
         formatter: tooltip,
       },
       dataZoom: [
         { id: 'x-in', type: 'inside', xAxisIndex: st.grupos.map((_, i) => i), filterMode: 'filter', startValue: st.ini, endValue: st.fim, minValueSpan: 7 * DIA },
         { id: 'x-sl', type: 'slider', xAxisIndex: st.grupos.map((_, i) => i), filterMode: 'filter', startValue: st.ini, endValue: st.fim, minValueSpan: 7 * DIA,
-          height: 38, bottom: 10, left: MARG.esq + 4, right: MARG.dir, brushSelect: true,
+          height: movel() ? 28 : 38, bottom: 10, showDetail: !movel(), left: MARG.esq + 4, right: MARG.dir, brushSelect: true,
           borderColor: c.line, backgroundColor: 'transparent', fillerColor: c.soft,
           dataBackground: { lineStyle: { color: c.axis, width: 1 }, areaStyle: { color: c.line, opacity: .6 } },
           selectedDataBackground: { lineStyle: { color: c.accent, width: 1 }, areaStyle: { color: c.accent, opacity: .15 } },
           handleStyle: { color: c.panel, borderColor: c.accent, borderWidth: 1.5 },
           moveHandleStyle: { color: c.accent, opacity: .5 }, emphasis: { moveHandleStyle: { color: c.accent, opacity: .9 } },
-          textStyle: { color: c.muted, fontSize: 11 }, labelFormatter: v => fmtD(v) },
+          textStyle: { color: c.muted, fontSize: fsz }, labelFormatter: v => fmtD(v) },
         ...barras,
       ],
       series: lista,
@@ -324,28 +336,40 @@
 
   // título de cada painel (canto superior esquerdo): número do gráfico + séries com a cor/traço de cada linha
   const medir = (() => { const cv = document.createElement('canvas').getContext('2d'); return (t, f) => { cv.font = f; return cv.measureText(t).width; }; })();
+  // caixas dos títulos (em pixels do gráfico): clicar nelas abre/fecha a barra de escala do painel
+  let caixasTitulo = [];
   function titulos(c, L) {
-    const f = '500 12px IBM Plex Sans, system-ui, sans-serif', fn = '600 11px IBM Plex Mono, monospace';
-    const fs = '400 10px IBM Plex Sans, system-ui, sans-serif';
+    const m = movel();
+    const f = `500 ${m ? 11 : 12}px IBM Plex Sans, system-ui, sans-serif`, fn = '600 11px IBM Plex Mono, monospace';
+    const fs = `400 ${m ? 9 : 10}px IBM Plex Sans, system-ui, sans-serif`;
+    const larguraMax = chart.getWidth() - MARG.esq - MARG.dir - 16, ALT = 34;
+    caixasTitulo = [];
     return L.map((l, i) => {
-      const filhos = [];
-      let x = 8;
+      const filhos = [], aberta = st.escala.has(st.grupos[i][0]);
+      let x = 8, y = 0, maxX = 0;
       if (st.grupos.length > 1) {
-        filhos.push({ type: 'text', style: { text: String(i + 1), x, y: 18, verticalAlign: 'middle', fill: c.muted, font: fn } });
+        filhos.push({ type: 'text', style: { text: String(i + 1), x, y: 17, verticalAlign: 'middle', fill: c.muted, font: fn } });
         x += medir(String(i + 1), fn) + 10;
       }
+      const x0 = x;
       for (const id of st.grupos[i]) {
-        filhos.push({ type: 'line', shape: { x1: x, y1: 11, x2: x + 14, y2: 11 },
-          style: { stroke: c.cor(CAT[id].cor), lineWidth: 3, lineCap: 'round', lineDash: CAT[id].traco ? [4, 3] : null } });
-        x += 20;
         // abaixo do nome, pequeno: só a fonte (sem o detalhe entre parênteses)
         const sub = (CAT[id].origem || '').split(' (')[0].replace(/,? soma de 12 meses$/, '');
-        filhos.push({ type: 'text', style: { text: CAT[id].nome, x, y: 11, verticalAlign: 'middle', fill: c.fg, font: f } });
-        filhos.push({ type: 'text', style: { text: sub, x, y: 26, verticalAlign: 'middle', fill: c.muted, font: fs } });
-        x += Math.max(medir(CAT[id].nome, f), medir(sub, fs)) + 16;
+        const w = 20 + Math.max(medir(CAT[id].nome, f), medir(sub, fs)) + 14;
+        if (x > x0 && x + w > larguraMax) { maxX = Math.max(maxX, x); x = x0; y += ALT; }   // quebra de linha
+        filhos.push({ type: 'line', shape: { x1: x, y1: y + 11, x2: x + 14, y2: y + 11 },
+          style: { stroke: c.cor(CAT[id].cor), lineWidth: 3, lineCap: 'round', lineDash: CAT[id].traco ? [4, 3] : null } });
+        filhos.push({ type: 'text', style: { text: CAT[id].nome, x: x + 20, y: y + 11, verticalAlign: 'middle', fill: c.fg, font: f } });
+        filhos.push({ type: 'text', style: { text: sub, x: x + 20, y: y + 25, verticalAlign: 'middle', fill: c.muted, font: fs } });
+        x += w;
       }
-      filhos.unshift({ type: 'rect', shape: { x: 0, y: 0, width: x - 6, height: 36, r: 6 },
-        style: { fill: hexA(c.panel, .88), stroke: c.line, lineWidth: 1 } });
+      // indicação de que o rótulo abre a escala
+      filhos.push({ type: 'text', style: { text: aberta ? '⇕ ✕' : '⇕', x, y: y + 17, verticalAlign: 'middle', fill: aberta ? c.accent : c.muted, font: '600 13px IBM Plex Sans, sans-serif' } });
+      x += aberta ? 30 : 16;
+      maxX = Math.max(maxX, x);
+      filhos.unshift({ type: 'rect', shape: { x: 0, y: 0, width: maxX - 2, height: y + ALT, r: 6 },
+        style: { fill: hexA(c.panel, .9), stroke: aberta ? c.accent : c.line, lineWidth: 1 } });
+      caixasTitulo.push({ x: MARG.esq + 6, y: l.top + 6, w: maxX - 2, h: y + ALT, chave: st.grupos[i][0] });
       return { type: 'group', left: MARG.esq + 6, top: l.top + 6, z: 10, silent: true, children: filhos };
     });
   }
@@ -452,7 +476,8 @@
   function desenhar() {
     if (!chart) return;
     const N = st.grupos.length;
-    const alt = N === 1 ? '' : Math.min(1400, 440 + 190 * (N - 1)) + 'px';
+    const alt = movel() ? Math.min(1500, N === 1 ? 380 : 330 + 230 * (N - 1)) + 'px'
+      : N === 1 ? '' : Math.min(1400, 440 + 190 * (N - 1)) + 'px';
     if ($('grafico').style.height !== alt) { $('grafico').style.height = alt; chart.resize(); }
     chart.setOption(opcao(), { notMerge: true });
     atualizarUI();
@@ -942,6 +967,8 @@
     $('seg-freq').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.freq) return; st.freq = v; desenhar(); rodape(); };
     $('seg-modo').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.modo || e.target.disabled) return; st.modo = v; desenhar(); };
     $('seg-escala').onclick = e => { const v = e.target.dataset?.v; if (!v || e.target.disabled) return; st.log = v === 'log'; desenhar(); };
+    $('ir-filtros').onclick = () => $('menu').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('ir-grafico').onclick = () => $('principal').scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('seg-eixo').onclick = e => { const v = e.target.dataset?.v; if (!v || v === st.eixos || e.target.disabled) return; st.eixos = v; montarGrupos(); desenhar(); };
     $('y-reset').onclick = () => { st.yz = {}; desenhar(); };
     $('seg-per').onclick = e => { const v = e.target.dataset?.v; if (v) aplicarPeriodo(preset(v), extMax); };
@@ -955,8 +982,14 @@
     const zr = chart.getZr();
     let baixo = null;
     zr.on('mousedown', e => { baixo = [e.offsetX, e.offsetY]; });
+    zr.on('mousemove', e => {
+      if (caixasTitulo.some(b => e.offsetX >= b.x && e.offsetX <= b.x + b.w && e.offsetY >= b.y && e.offsetY <= b.y + b.h)) zr.setCursorStyle('pointer');
+    });
     zr.on('click', e => {
       if (baixo && Math.hypot(e.offsetX - baixo[0], e.offsetY - baixo[1]) > 5) return;
+      // clique no rótulo do painel: abre/fecha a barra de ajuste da escala vertical
+      const cx = caixasTitulo.find(b => e.offsetX >= b.x && e.offsetX <= b.x + b.w && e.offsetY >= b.y && e.offsetY <= b.y + b.h);
+      if (cx) { st.escala.has(cx.chave) ? st.escala.delete(cx.chave) : st.escala.add(cx.chave); desenhar(); return; }
       const dentro = st.grupos.some((_, i) => chart.containPixel({ gridIndex: i }, [e.offsetX, e.offsetY]));
       if (dentro) clicar(e.offsetX);
     });

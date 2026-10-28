@@ -255,13 +255,36 @@ details.sub > summary:hover { color: var(--fg); }
 .medida .v.up { color: var(--up); } .medida .v.down { color: var(--down); }
 .medida .s { color: var(--muted); font-size: 12px; }
 
+.ir { display: none; }
+/* celular e tablet: gráfico primeiro, menu depois (com atalhos entre os dois) */
 @media (max-width: 900px) {
-  .app { grid-template-columns: minmax(0, 1fr); }
-  aside { position: static; max-height: none; }
+  .app { display: flex; flex-direction: column; }
+  main { order: 1; }
+  aside { order: 2; position: static; max-height: none; }
+  .ir {
+    display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 40px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg);
+    font: 500 14px var(--sans); cursor: pointer;
+  }
+  aside .ir { width: calc(100% - 24px); margin: 12px 12px 4px; }
 }
 @media (max-width: 640px) {
+  body { padding-block: 12px 20px; }
+  .wrap { gap: 10px; }
+  h1 { font-size: 19px; }
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat:first-child { grid-column: span 2; }
+  .stat { padding: 8px 12px; }
+  .stat .v { font-size: 15px; }
+  .card { padding: 6px 2px 2px; border-radius: 10px; }
+  .govs { padding: 2px 6px 8px; }
+  .gchip { height: 26px; padding: 0 7px; font-size: 12px; }
+  .grupos { gap: 6px; }
+  .grupo { min-height: 38px; padding: 4px 4px 4px 6px; }
+  .ativo { height: 28px; font-size: 12px; }
+  .grupo.novo { min-height: 30px; }
+  .rodape { padding: 6px 6px 8px; }
+  .dica span:last-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -280,7 +303,8 @@ details.sub > summary:hover { color: var(--fg); }
   </header>
 
   <div class="app">
-    <aside aria-label="Filtros e séries">
+    <aside aria-label="Filtros e séries" id="menu">
+      <button class="ir" id="ir-grafico">↑ Voltar ao gráfico</button>
       <details class="sec" open>
         <summary>Visões salvas</summary>
         <div class="sec-corpo">
@@ -358,7 +382,8 @@ details.sub > summary:hover { color: var(--fg); }
       <div id="fontes"></div>
     </aside>
 
-    <main>
+    <main id="principal">
+      <button class="ir" id="ir-filtros">☰ Séries, período e filtros</button>
       <div class="grupos" id="grupos" aria-label="Gráficos: arraste uma série para juntar ou separar"></div>
 
       <div class="stats" id="stats">
@@ -378,7 +403,7 @@ details.sub > summary:hover { color: var(--fg); }
   </div>
 </div>
 <script src="vendor/echarts.min.js"></script>
-<script src="app.js?v=40db5cd7ba"></script>
+<script src="app.js?v=692b42411d"></script>
 <script data-goatcounter="https://jczanella.goatcounter.com/count" async src="https://gc.zgo.at/count.v5.js" crossorigin="anonymous" integrity="sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ"></script>
 </body>
 </html>
